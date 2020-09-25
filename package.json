@@ -17,7 +17,7 @@
   "author": "NewLogic",
   "license": "MIT",
   "devDependencies": {
-    "@capacitor/android": "^2.4.1",
+    "@capacitor/android": "^2.4.2",
     "@capacitor/core": "^2.4.1",
     "@capacitor/ios": "^2.4.1",
     "@ionic/prettier-config": "^1.0.0",
