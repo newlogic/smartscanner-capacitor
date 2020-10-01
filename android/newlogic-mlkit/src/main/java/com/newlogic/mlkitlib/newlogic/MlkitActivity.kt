@@ -33,7 +33,6 @@ import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
-import com.googlecode.tesseract.android.TessBaseAPI
 import com.newlogic.mlkitlib.R
 import com.newlogic.mlkitlib.library.newlogic.FileUtils
 import kotlinx.android.synthetic.main.activity_mrz.*
@@ -46,39 +45,29 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import kotlin.concurrent.thread
 import kotlin.math.abs
-
-//typealias LumaListener = (luma: String) -> Unit
 
 class MLKitActivity : AppCompatActivity(), View.OnClickListener {
 
     private var preview: Preview? = null
     private var imageAnalyzer: ImageAnalysis? = null
-    private var tessImageAnalyzer: ImageAnalysis? = null
     private var camera: Camera? = null
     private var flashButton: View? = null
+    private var startScanTime: Long = 0
+    private var tessStartScanTime: Long = 0
+    private var onAnalyzerResult: (AnalyzerType, String) -> Unit = { a, b -> getAnalyzerResult(a, b) }
+    private var onAnalyzerStat: (AnalyzerType, Long, Long) -> Unit = { a, b: Long, c: Long -> getAnalyzerStat(a, b, c) }
 
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
 
-    private var tessBaseAPI: TessBaseAPI? = null
-
-    private var onAnalyzerResult: (AnalyzerType, String) -> Unit = { a, b -> getAnalyzerResult(a, b) }
-    private var onAnalyzerStat: (AnalyzerType, Long, Long) -> Unit = { a, b: Long, c: Long -> getAnalyzerStat(a, b, c) }
-
-    private var startScanTime: Long = 0
-    private var tessStartScanTime: Long = 0
-
     enum class AnalyzerType {
         MLKIT,
-        TESSERACT,
         BARCODE
     }
 
     private object UIState {
         var mlkit: Boolean? = false
-        var tesseract: Boolean? = false
         var debug: Boolean? = false
     }
 
@@ -118,12 +107,6 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
                     onMlkitCheckboxClicked(mlkitCheckbox)
                     mlkitText.text = result
                 }
-                AnalyzerType.TESSERACT -> {
-                    Log.d(TAG, "Success from Tesseract")
-                    tesseractCheckbox.isChecked = false
-                    onTesseractCheckboxClicked(tesseractCheckbox)
-                    tesseractText.text = result
-                }
                 AnalyzerType.BARCODE -> {
                     Log.d(TAG, "Success from Barcode")
                     Log.d(TAG, "value: $result")
@@ -143,10 +126,6 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
                 mlkitMS.text = "Frame processing time: ${analyzerTime} ms"
                 val scanTime = ((System.currentTimeMillis().toDouble() - startScanTime.toDouble()) / 1000)
                 mlkitTime.text = "Total scan time: ${scanTime} s"
-            } else if (analyzerType == AnalyzerType.TESSERACT) {
-                tesseractMS.text = "Frame processing time: ${analyzerTime} ms"
-                val scanTime = ((System.currentTimeMillis().toDouble() - tessStartScanTime.toDouble()) / 1000)
-                tesseractTime.text = "Total scan time: ${scanTime} s"
             }
         }
     }
@@ -159,7 +138,6 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
             private var onResult: ((AnalyzerType, String) -> Unit)?,
             private var getUIState: (() -> UIState)?,
             private var onStat: ((AnalyzerType, Long, Long) -> Unit)?,
-            private var tessBaseAPI: TessBaseAPI?,
             private var debugPath: String?
     ) : ImageAnalysis.Analyzer {
 
@@ -242,20 +220,6 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
         }
         @SuppressLint("UnsafeExperimentalUsageError")
         override fun analyze(imageProxy: ImageProxy) {
-
-//                // DEBUG: Write images to storage
-//                val fname = "MRZ-TESS-$startTime.jpg"
-//                val file = File(debugPath, fname)
-//                if (file.exists()) file.delete()
-//                try {
-//                    val out = FileOutputStream(file)
-//                    b.compress(Bitmap.CompressFormat.JPEG, 90, out)
-//                    out.flush()
-//                    out.close()
-//                } catch (e: java.lang.Exception) {
-//                    e.printStackTrace()
-//                }
-//                Log.d(TAG, "Saved image: $debugPath/$fname")
 
             val mediaImage = imageProxy.image
             if (mediaImage != null) {
@@ -345,22 +309,16 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
                         }
                 }
                 //MRZ
-                var uiState = getUIState?.let { it() }
                 if (UIState.mlkit!! && !mlkitBusy) {
                     mlkitBusy = true
                     val mlStartTime = System.currentTimeMillis()
-
                     val image = InputImage.fromBitmap(b, imageProxy.imageInfo.rotationDegrees)
-
 
                     // Pass image to an ML Kit Vision API
                     val recognizer = TextRecognition.getClient()
                     Log.d("$TAG/MLKit", "TextRecognition: process")
                     val start = System.currentTimeMillis()
-
-
-//                    await(
-                        recognizer.process(image)
+                    recognizer.process(image)
                             .addOnSuccessListener { visionText ->
                                 modelLayoutView.modelText.visibility = View.INVISIBLE
                                 val timeRequired = System.currentTimeMillis() - start
@@ -380,15 +338,19 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
 
                                 try {
                                     Log.d(
-                                        "$TAG/MLKit",
-                                        "Before cleaner: [${URLEncoder.encode(rawFullRead, "UTF-8")
-                                            .replace("%3C", "<").replace("%0A", "↩")}]"
+                                            "$TAG/MLKit",
+                                            "Before cleaner: [${
+                                                URLEncoder.encode(rawFullRead, "UTF-8")
+                                                        .replace("%3C", "<").replace("%0A", "↩")
+                                            }]"
                                     )
                                     val mrz = MRZCleaner.clean(rawFullRead)
                                     Log.d(
-                                        "$TAG/MLKit",
-                                        "After cleaner = [${URLEncoder.encode(mrz, "UTF-8")
-                                            .replace("%3C", "<").replace("%0A", "↩")}]"
+                                            "$TAG/MLKit",
+                                            "After cleaner = [${
+                                                URLEncoder.encode(mrz, "UTF-8")
+                                                        .replace("%3C", "<").replace("%0A", "↩")
+                                            }]"
                                     )
                                     val record = MRZCleaner.parseAndClean(mrz)
                                     //onResult?.invoke(AnalyzerType.MLKIT, record.toString())
@@ -402,20 +364,20 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
                                     // record to json
                                     val gson = Gson()
                                     val jsonString = gson.toJson(MRZResult(
-                                        imageCachePathFile,
-                                        record.code.toString(),
-                                        record.code1.toShort(),
-                                        record.code2.toShort(),
-                                        record.dateOfBirth?.toString()?.replace(Regex("[{}]"), ""),
-                                        record.documentNumber.toString(),
-                                        record.expirationDate?.toString()?.replace(Regex("[{}]"), ""),
-                                        record.format.toString(),
-                                        record.givenNames,
-                                        record.issuingCountry,
-                                        record.nationality,
-                                        record.sex.toString(),
-                                        record.surname,
-                                        record.toMrz()
+                                            imageCachePathFile,
+                                            record.code.toString(),
+                                            record.code1.toShort(),
+                                            record.code2.toShort(),
+                                            record.dateOfBirth?.toString()?.replace(Regex("[{}]"), ""),
+                                            record.documentNumber.toString(),
+                                            record.expirationDate?.toString()?.replace(Regex("[{}]"), ""),
+                                            record.format.toString(),
+                                            record.givenNames,
+                                            record.issuingCountry,
+                                            record.nationality,
+                                            record.sex.toString(),
+                                            record.surname,
+                                            record.toMrz()
                                     ))
                                     onResult?.invoke(AnalyzerType.MLKIT, jsonString)
                                 } catch (e: Exception) { // MrzParseException, IllegalArgumentException
@@ -423,8 +385,8 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
                                 }
                                 onStat?.invoke(
                                         AnalyzerType.MLKIT,
-                                    mlStartTime,
-                                    System.currentTimeMillis()
+                                        mlStartTime,
+                                        System.currentTimeMillis()
                                 )
                                 mlkitBusy = false
                             }
@@ -438,75 +400,16 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
                                 modelLayoutView.modelText.visibility = View.VISIBLE
                                 onStat?.invoke(
                                         AnalyzerType.MLKIT,
-                                    mlStartTime,
-                                    System.currentTimeMillis()
+                                        mlStartTime,
+                                        System.currentTimeMillis()
                                 )
                                 mlkitBusy = false
                             }
-                }
-                if (UIState.tesseract!! && !tesseractBusy) {
-                    tesseractBusy = true
-                    val tessStartTime = System.currentTimeMillis()
-
-                    thread(start = true) {
-                        // Tesseract
-                        val matrix = Matrix()
-                        matrix.postRotate(imageProxy.imageInfo.rotationDegrees.toFloat())
-                        val rotatedBitmap =
-                            Bitmap.createBitmap(b, 0, 0, b.width, b.height, matrix, true)
-                        tessBaseAPI!!.setImage(rotatedBitmap)
-                        val tessResult = tessBaseAPI!!.utF8Text
-
-                        try {
-                            Log.d(
-                                "$TAG/Tesseract",
-                                "Before cleaner: [${URLEncoder.encode(tessResult, "UTF-8")
-                                    .replace("%3C", "<").replace("%0A", "↩")}]"
-                            )
-                            val mrz = MRZCleaner.clean(tessResult)
-                            Log.d(
-                                "$TAG/Tesseract",
-                                "After cleaner = [${URLEncoder.encode(mrz, "UTF-8")
-                                    .replace("%3C", "<")
-                                    .replace("%0A", "↩")}]"
-                            )
-                            val record = MRZCleaner.parseAndClean(mrz)
-                            // onResult?.invoke(AnalyzerType.TESSERACT, record.toString())
-                            // record to json
-                            val gson = Gson()
-                            val jsonString = gson.toJson(MRZResult(
-                                null,
-                                record.code.toString(),
-                                record.code1.toShort(),
-                                record.code2.toShort(),
-                                record.dateOfBirth.toString().replace(Regex("[{}]"), ""),
-                                record.documentNumber.toString(),
-                                record.expirationDate.toString().replace(Regex("[{}]"), ""),
-                                record.format.toString(),
-                                record.givenNames,
-                                record.issuingCountry,
-                                record.nationality,
-                                record.sex.toString(),
-                                record.surname,
-                                record.toMrz()
-                            ))
-                            onResult?.invoke(AnalyzerType.TESSERACT, jsonString)
-                        } catch (e: Exception) { // MrzParseException, IllegalArgumentException
-                            Log.d("$TAG/Tesseract", e.toString())
-                        }
-                        onStat?.invoke(
-                                AnalyzerType.TESSERACT,
-                            tessStartTime,
-                            System.currentTimeMillis()
-                        )
-                        tesseractBusy = false
-                    }
                 }
             }
             imageProxy.close()
         }
     }
-
 
     private fun openSettingsApp() {
         val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
@@ -514,7 +417,6 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
         intent.data = uri
         startActivity(intent)
     }
-
 
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<String>, grantResults:
@@ -558,10 +460,7 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
             "barcode" -> {
             }
         }
-
         UIState.mlkit = mlkitCheckbox.isChecked
-        UIState.tesseract = tesseractCheckbox.isChecked
-
         // Request camera permissions
         if (allPermissionsGranted()) {
             startCamera()
@@ -569,12 +468,6 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
             ActivityCompat.requestPermissions(
                 this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
         }
-
-        //FirebaseApp.initializeApp(this)
-        //val firebaseModelManager: FirebaseModelManager = FirebaseModelManager.getInstance()
-        //firebaseModelManager.getDownloadedModels(FirebaseRemoteModel::class.java).addOnSuccessListener { models ->
-        //   Toast.makeText(this, "fini", Toast.LENGTH_SHORT).show()
-        //}
 
         outputDirectory = getOutputDirectory()
         cameraExecutor = Executors.newSingleThreadExecutor()
@@ -589,13 +482,8 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
             }
         }
 
-
-
-        tessBaseAPI = TessBaseAPI()
         val extDirPath: String = getExternalFilesDir(null)!!.absolutePath
         Log.d(TAG, "path: $extDirPath")
-        tessBaseAPI!!.init(extDirPath, "ocrb_int", TessBaseAPI.OEM_DEFAULT)
-        tessBaseAPI!!.pageSegMode = TessBaseAPI.PageSegMode.PSM_SINGLE_BLOCK
     }
 
     private fun startCamera() {
@@ -622,20 +510,9 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
                 .also {
-                    val mrzAnalyzer = MLKitAnalyzer(onAnalyzerResult, ::getUIState, onAnalyzerStat, tessBaseAPI, getExternalFilesDir(null)!!.absolutePath + "/Debug")
+                    val mrzAnalyzer = MLKitAnalyzer(onAnalyzerResult, ::getUIState, onAnalyzerStat, getExternalFilesDir(null)!!.absolutePath + "/Debug")
                     it.setAnalyzer(cameraExecutor, mrzAnalyzer)
                 }
-
-        /*  tessImageAnalyzer = ImageAnalysis.Builder()
-                .setTargetAspectRatio(AspectRatio.RATIO_4_3)
-               .setTargetResolution(Size(960, 720))
-               .setTargetResolution(Size(640, 480))
-               .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-            .build()
-           .also {
-            var tess_analyzer = TesseractAnalyzer(tessOnAnalyzerResult, tessOnAnalyzerGetState, tessOnAnalyzerStat, tessBaseAPI, Environment.getExternalStorageDirectory()!!.absolutePath + "/Debug")
-           it.setAnalyzer(cameraExecutor, tess_analyzer)
-        }*/
 
             // Select back camera
             val cameraSelector = CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
@@ -696,20 +573,6 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
                 mlkitText.text = ""
                 mlkitMS.text = ""
                 mlkitTime.text = ""
-            }
-        }
-    }
-
-    fun onTesseractCheckboxClicked(view: View) {
-        if (view is Switch) {
-            val checked: Boolean = view.isChecked
-            UIState.tesseract = checked
-            Log.d(TAG, "UIState.tesseract: ${UIState.tesseract}")
-            if (checked) {
-                tessStartScanTime = System.currentTimeMillis()
-                tesseractText.text = ""
-                tesseractMS.text = ""
-                tesseractTime.text = ""
             }
         }
     }
@@ -777,7 +640,6 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
                     }
                 }
             }
-
         }
         return super.onTouchEvent(event)
     }
