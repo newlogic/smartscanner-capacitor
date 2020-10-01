@@ -1,4 +1,4 @@
-package com.newlogic.mlkitlib.library.newlogic
+package com.newlogic.mlkitlib.newlogic.utils
 
 import android.content.Context
 import java.io.*

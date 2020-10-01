@@ -1,8 +1,9 @@
-package com.newlogic.mlkitlib.newlogic
+package com.newlogic.mlkitlib.newlogic.utils
 
 import android.util.Log
 import com.newlogic.mlkitlib.innovatrics.mrz.MrzParser
 import com.newlogic.mlkitlib.innovatrics.mrz.MrzRecord
+import com.newlogic.mlkitlib.newlogic.MLKitActivity
 import java.net.URLEncoder
 
 object MRZCleaner {
