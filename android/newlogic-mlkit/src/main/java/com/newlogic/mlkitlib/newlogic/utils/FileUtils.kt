@@ -5,9 +5,10 @@ import java.io.*
 
 
 object FileUtils {
-    private val tag = FileUtils::class.java.simpleName
+    private val TAG = FileUtils::class.java.simpleName
     const val TAMWINI_PREFS = "TamwiniPrefs"
     const val TAMWINI_PREFS_TESS_FILE_OPS_DONE = "TESS_FILE_OPS_DONE"
+
     fun tesseractPathExists(context: Context): Boolean {
         val f = createTesseractFile(context)
         return f.isDirectory && f.exists()
@@ -31,7 +32,6 @@ object FileUtils {
 
     private fun createTesseractFile(context: Context): File {
         val extDirPath = getTesseractExtFilePathAsString(context)
-//        Log.d(tag, "path: %s", extDirPath)
         return File(extDirPath)
     }
 
@@ -50,30 +50,22 @@ object FileUtils {
 
     private fun copyFileOrDir(path: String, context: Context) {
         val assetManager = context.assets
-        var assets: Array<String>?
+        val assets: Array<String>?
         try {
-//            Log.i(tag, "copyFileOrDir() %s", path)
             assets = assetManager.list(path)
             if (assets!!.isEmpty()) {
-//                Log.i(tag, "copyFileOrDir() ; assets.length == 0 ")
                 copyFile(path, context)
             } else {
-//                Log.i(tag, "copyFileOrDir()  assets.length != 0 [" + assets.size + "]")
-                val fullPath =
-                    context.getExternalFilesDir(null).toString() + "/" + path
-//                Timber.i(tag, "path=%s", fullPath)
+                val fullPath = context.getExternalFilesDir(null).toString() + "/" + path
                 val dir = File(fullPath)
                 if (!dir.exists()
                     && !path.startsWith("fallback-locales") && !path.startsWith("stored-locales")
                     && !path.startsWith("images") && !path.startsWith("public")
                     && !path.startsWith("sounds") && !path.startsWith("webkit")
                 )
-                    if (!dir.mkdirs()) {
-                        //Timber.i(tag, "could not create dir %s", fullPath)
-                    }
+
                 for (i in assets.indices) {
-                    var p: String
-                    p = if (path == "") "" else "$path/"
+                    val p = if (path == "") "" else "$path/"
                     if (!path.startsWith("fallback-locales") && !path.startsWith(
                             "stored" +
                                     "-locales"
@@ -84,17 +76,16 @@ object FileUtils {
                 }
             }
         } catch (ex: IOException) {
-//            Timber.e(ex, tag, "I/O Exception")
+            ex.printStackTrace()
         }
     }
 
     private fun copyFile(filename: String, context: Context) {
         val assetManager = context.assets
-        var `in`: InputStream?
-        var out: OutputStream?
-        var newFileName: String?
+        val `in`: InputStream?
+        val out: OutputStream?
+        val newFileName: String?
         try {
-//            Timber.i(tag, "copyFile() %s", filename)
             `in` = assetManager.open(filename)
             newFileName =
                 if (filename.endsWith(".jpg")) // extension was added to avoid compression on APK file
@@ -112,8 +103,7 @@ object FileUtils {
             out.flush()
             out.close()
         } catch (e: Exception) {
-//            Timber.e(tag, "Exception in copyFile() of %s", newFileName)
-//            Timber.e(tag, "Exception : %s", e.toString())
+            e.printStackTrace()
         }
     }
 }
