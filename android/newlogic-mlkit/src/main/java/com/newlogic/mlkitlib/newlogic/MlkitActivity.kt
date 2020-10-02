@@ -34,7 +34,11 @@ import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.newlogic.mlkitlib.R
-import com.newlogic.mlkitlib.library.newlogic.FileUtils
+import com.newlogic.mlkitlib.innovatrics.barcode.BarcodeResult
+import com.newlogic.mlkitlib.newlogic.utils.FileUtils
+import com.newlogic.mlkitlib.newlogic.utils.MRZCleaner
+import com.newlogic.mlkitlib.newlogic.utils.MRZResult
+import com.newlogic.mlkitlib.newlogic.utils.Modes.*
 import kotlinx.android.synthetic.main.activity_mrz.*
 import kotlinx.android.synthetic.main.activity_mrz.view.*
 import java.io.ByteArrayOutputStream
@@ -49,6 +53,31 @@ import kotlin.math.abs
 
 class MLKitActivity : AppCompatActivity(), View.OnClickListener {
 
+    companion object {
+        const val TAG = "MLKitActivity"
+        const val MLKIT_RESULT = "MLKitResult"
+        private const val REQUEST_CODE_PERMISSIONS = 10
+        private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+
+        private lateinit var modelLayoutView: View
+        private lateinit var CoordinatorLayoutView: View
+        private lateinit var context: Context
+        private var mode: String? = null
+        private var rectangle: View? = null
+
+        enum class AnalyzerType {
+            MLKIT,
+            BARCODE
+        }
+
+        private object UIState {
+            var mlkit: Boolean? = false
+            var debug: Boolean? = false
+        }
+    }
+
+    private var x = 0f
+    private var y = 0f
     private var preview: Preview? = null
     private var imageAnalyzer: ImageAnalysis? = null
     private var camera: Camera? = null
@@ -61,42 +90,7 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
 
-    enum class AnalyzerType {
-        MLKIT,
-        BARCODE
-    }
-
-    private object UIState {
-        var mlkit: Boolean? = false
-        var debug: Boolean? = false
-    }
-
     private val clickThreshold = 5
-    private var x = 0f
-    private var y = 0f
-
-    data class MRZResult (
-        val imagePath: String?,
-        val code: String?,
-        val code1: Short?,
-        val code2: Short?,
-        val dateOfBirth: String?,
-        val documentNumber: String?,
-        val expirationDate: String?,
-        val format: String?,
-        val givenNames: String?,
-        val issuingCountry: String?,
-        val nationality: String?,
-        val sex: String?,
-        val surname: String?,
-        var mrz: String?
-    )
-
-    data class barcodeResult (
-        val imagePath: String?,
-        val corners: String?,
-        val value: String?
-    )
 
     private fun getAnalyzerResult(analyzerType: AnalyzerType, result: String): Unit {
         runOnUiThread {
@@ -143,7 +137,6 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
 
         private var barcodeBusy: Boolean = false
         private var mlkitBusy: Boolean = false
-        private var tesseractBusy: Boolean = false
 
         fun Image.toBitmap(rotation: Int = 0): Bitmap {
             val yBuffer = planes[0].buffer // Y
@@ -231,7 +224,7 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
                 )
 
                 //barcode and pdf417
-                if (!barcodeBusy && ((mode == "pdf417") || (mode == "barcode"))) {
+                if (!barcodeBusy && ((mode == PDF_417.value) || (mode == BARCODE.value))) {
                     barcodeBusy = true
                     Log.d("$TAG/MLKit", "barcode: mode is $mode")
                     val start = System.currentTimeMillis()
@@ -239,12 +232,12 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
                         .setBarcodeFormats(Barcode.FORMAT_ALL_FORMATS)
                         .build()
                     when (mode) {
-                        "pdf417" -> {
+                        PDF_417.value -> {
                             options = BarcodeScannerOptions.Builder()
                                 .setBarcodeFormats(Barcode.FORMAT_PDF417)
                                 .build()
                         }
-                        "barcode" -> {
+                        BARCODE.value -> {
                             options = BarcodeScannerOptions.Builder()
                                 .setBarcodeFormats(
                                     Barcode.FORMAT_CODE_128,
@@ -293,7 +286,7 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
                                     imageProxy.imageInfo.rotationDegrees
                                 )
                                 val gson = Gson()
-                                val jsonString = gson.toJson(barcodeResult(
+                                val jsonString = gson.toJson(BarcodeResult(
                                     imageCachePathFile,
                                     cornersString,
                                     rawValue))
@@ -448,16 +441,13 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
         val intent = intent
         mode = intent.getStringExtra("mode")
         when (mode) {
-            "mrz" -> {
+            MRZ.value -> {
                 mlkitCheckbox.isChecked = true
             }
-            "tesseract" -> {
-                tesseractCheckbox.isChecked = true
-            }
-            "pdf417" -> {
+            PDF_417.value  -> {
 
             }
-            "barcode" -> {
+            BARCODE.value -> {
             }
         }
         UIState.mlkit = mlkitCheckbox.isChecked
@@ -502,7 +492,7 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
                 .build()
 
             var size = Size(480, 640)
-            if (mode == "pdf417") size = Size(1080, 1920)
+            if (mode == PDF_417.value) size = Size(1080, 1920)
             imageAnalyzer = ImageAnalysis.Builder()
                //.setTargetAspectRatio(AspectRatio.RATIO_4_3)
                 .setTargetResolution(size)
@@ -549,18 +539,6 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
             File(it, resources.getString(R.string.app_name)).apply { mkdirs() } }
         return if (mediaDir != null && mediaDir.exists())
             mediaDir else filesDir
-    }
-
-    companion object {
-        const val TAG = "CameraXBasic"
-        const val MLKIT_RESULT = "MLKitResult"
-        private const val REQUEST_CODE_PERMISSIONS = 10
-        private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        private lateinit var modelLayoutView: View
-        private lateinit var CoordinatorLayoutView: View
-        private lateinit var context: Context
-        private var mode: String? = null
-        private var rectangle: View? = null
     }
 
     fun onMlkitCheckboxClicked(view: View) {
