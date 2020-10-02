@@ -6,13 +6,9 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.*
+import android.graphics.Bitmap
 import android.hardware.camera2.CameraManager
-import android.media.Image
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
@@ -22,7 +18,6 @@ import android.view.View
 import android.widget.Switch
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
-import androidx.camera.core.Camera
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -35,15 +30,15 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.newlogic.mlkitlib.R
 import com.newlogic.mlkitlib.innovatrics.barcode.BarcodeResult
-import com.newlogic.mlkitlib.newlogic.utils.FileUtils
-import com.newlogic.mlkitlib.newlogic.utils.MRZCleaner
-import com.newlogic.mlkitlib.newlogic.utils.MRZResult
-import com.newlogic.mlkitlib.newlogic.utils.Modes.*
+import com.newlogic.mlkitlib.newlogic.extension.cacheImageToLocal
+import com.newlogic.mlkitlib.newlogic.extension.getConnectionType
+import com.newlogic.mlkitlib.newlogic.extension.toBitmap
+import com.newlogic.mlkitlib.newlogic.utils.*
+import com.newlogic.mlkitlib.newlogic.utils.Modes.BARCODE
+import com.newlogic.mlkitlib.newlogic.utils.Modes.PDF_417
 import kotlinx.android.synthetic.main.activity_mrz.*
 import kotlinx.android.synthetic.main.activity_mrz.view.*
-import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.FileOutputStream
 import java.net.URLEncoder
 import java.text.SimpleDateFormat
 import java.util.*
@@ -62,13 +57,9 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
         private lateinit var modelLayoutView: View
         private lateinit var CoordinatorLayoutView: View
         private lateinit var context: Context
+
         private var mode: String? = null
         private var rectangle: View? = null
-
-        enum class AnalyzerType {
-            MLKIT,
-            BARCODE
-        }
 
         private object UIState {
             var mlkit: Boolean? = false
@@ -91,6 +82,115 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var cameraExecutor: ExecutorService
 
     private val clickThreshold = 5
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_mrz)
+        modelLayoutView = findViewById(R.id.viewLayout)
+        CoordinatorLayoutView =  findViewById(R.id.CoordinatorLayout)
+        flashButton = findViewById(R.id.flash_button)
+        rectangle = findViewById(R.id.rectimage)
+        findViewById<View>(R.id.close_button).setOnClickListener(this)
+        flashButton?.setOnClickListener(this)
+        context = applicationContext
+        val intent = intent
+        mode = intent.getStringExtra("mode")
+        when (mode) {
+            Modes.MRZ.value -> { mlkitCheckbox.isChecked = true }
+            PDF_417.value  -> { }
+            BARCODE.value -> { }
+        }
+        UIState.mlkit = mlkitCheckbox.isChecked
+        // Request camera permissions
+        if (allPermissionsGranted()) {
+            startCamera()
+        } else {
+            ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
+        }
+
+        outputDirectory = getOutputDirectory()
+        cameraExecutor = Executors.newSingleThreadExecutor()
+
+        // TODO: This will not work if the file is updated in the APK, need to handle versioning
+        if (!FileUtils.tesseractPathExists(this)) {
+            if (FileUtils.createTesseractSubDir(this)) {
+                FileUtils.copyFilesToSdCard(this)
+            } else {
+                //Timber.e(this.getClass().getSimpleName(), "Unknown file error. Cannot create subdirectory tessdata");
+                Log.e(TAG, "Unknown file error. Cannot create subdirectory tessdata")
+            }
+        }
+
+        val extDirPath: String = getExternalFilesDir(null)!!.absolutePath
+        Log.d(TAG, "path: $extDirPath")
+    }
+
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<String>, grantResults:
+        IntArray) {
+        if (requestCode == REQUEST_CODE_PERMISSIONS) {
+            if (allPermissionsGranted()) {
+                startCamera()
+            } else {
+                val snackBar: Snackbar = Snackbar.make(
+                    CoordinatorLayoutView,
+                    R.string.required_perms_not_given, Snackbar.LENGTH_INDEFINITE
+                )
+                snackBar.setAction(R.string.settings) { openSettingsApp() }
+                snackBar.show()
+            }
+        }
+    }
+
+    private fun openSettingsApp() {
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+        val uri = Uri.fromParts("package", packageName, null)
+        intent.data = uri
+        startActivity(intent)
+    }
+
+    private fun startCamera() {
+
+        this.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+
+        cameraProviderFuture.addListener({
+            // Used to bind the lifecycle of cameras to the lifecycle owner
+            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+
+            // Preview
+            preview = Preview.Builder().build()
+
+            var size = Size(480, 640)
+            if (mode == PDF_417.value) size = Size(1080, 1920)
+            imageAnalyzer = ImageAnalysis.Builder()
+                .setTargetResolution(size)
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                .build()
+                .also {
+                    it.setAnalyzer(cameraExecutor, getMrzAnalyzer())
+                }
+
+            // Select back camera
+            val cameraSelector = CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
+            try {
+                // Unbind use cases before rebinding
+                cameraProvider.unbindAll()
+                // Bind use cases to camera
+                camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalyzer)
+                preview?.setSurfaceProvider(viewFinder.createSurfaceProvider())
+                Log.d(TAG, "Measured size: ${viewFinder.width}x${viewFinder.height}")
+
+                startScanTime = System.currentTimeMillis()
+                tessStartScanTime = startScanTime
+            } catch(exc: Exception) {
+                Log.e(TAG, "Use case binding failed", exc)
+            }
+
+        }, ContextCompat.getMainExecutor(this))
+    }
 
     private fun getAnalyzerResult(analyzerType: AnalyzerType, result: String): Unit {
         runOnUiThread {
@@ -117,109 +217,25 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
         runOnUiThread {
             val analyzerTime = endTime - startTime
             if (analyzerType == AnalyzerType.MLKIT) {
-                mlkitMS.text = "Frame processing time: ${analyzerTime} ms"
+                mlkitMS.text = "Frame processing time: $analyzerTime ms"
                 val scanTime = ((System.currentTimeMillis().toDouble() - startScanTime.toDouble()) / 1000)
-                mlkitTime.text = "Total scan time: ${scanTime} s"
+                mlkitTime.text = "Total scan time: $scanTime s"
             }
         }
     }
 
-    private fun getUIState(): UIState {
-        return UIState
-    }
+    @SuppressLint("UnsafeExperimentalUsageError")
+    private fun getMrzAnalyzer(): MLKitAnalyzer {
+        var barcodeBusy = false
+        var mlkitBusy = false
 
-    private class MLKitAnalyzer(
-            private var onResult: ((AnalyzerType, String) -> Unit)?,
-            private var getUIState: (() -> UIState)?,
-            private var onStat: ((AnalyzerType, Long, Long) -> Unit)?,
-            private var debugPath: String?
-    ) : ImageAnalysis.Analyzer {
-
-        private var barcodeBusy: Boolean = false
-        private var mlkitBusy: Boolean = false
-
-        fun Image.toBitmap(rotation: Int = 0): Bitmap {
-            val yBuffer = planes[0].buffer // Y
-            val uBuffer = planes[1].buffer // U
-            val vBuffer = planes[2].buffer // V
-
-            val ySize = yBuffer.remaining()
-            val uSize = uBuffer.remaining()
-            val vSize = vBuffer.remaining()
-
-            val nv21 = ByteArray(ySize + uSize + vSize)
-
-            // U and V are swapped
-            yBuffer.get(nv21, 0, ySize)
-            vBuffer.get(nv21, ySize, vSize)
-            uBuffer.get(nv21, ySize + vSize, uSize)
-
-            val yuvImage = YuvImage(nv21, ImageFormat.NV21, this.width, this.height, null)
-            val out = ByteArrayOutputStream()
-
-            val rect =  Rect()
-            if (rotation == 90 || rotation == 270) {
-                rect.left = this.width / 4
-                rect.top = 0
-                rect.right = this.width - rect.left
-                rect.bottom = this.height
-            } else {
-                rect.left = 0
-                rect.top = this.height / 4
-                rect.right = this.width
-                rect.bottom =  this.height - rect.top
-            }
-
-            Log.d(TAG, "Image ${this.width}x${this.height}, crop to: ${rect.left},${rect.top},${rect.right},${rect.bottom}")
-
-            yuvImage.compressToJpeg(rect, 100, out) // Ugly but it works
-            //yuvImage.compressToJpeg(Rect(270, 20, 370, 460), 100, out)
-            val imageBytes = out.toByteArray()
-            return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-        }
-
-        fun Bitmap.cacheImageToLocal(localPath: String, rotation: Int = 0, quality: Int = 100) {
-            val matrix = Matrix().apply { postRotate(rotation.toFloat()) }
-            val b = Bitmap.createBitmap(this, 0, 0, this.width, this.height, matrix, true)
-            val file = File(localPath)
-            file.createNewFile()
-            val ostream = FileOutputStream(file)
-            b.compress(Bitmap.CompressFormat.JPEG, quality, ostream)
-            ostream.flush()
-            ostream.close()
-        }
-
-        fun getConnectionType(context: Context): Int {
-            var result = 0 // Returns connection type. 0: none; 1: mobile data; 2: wifi
-            val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                cm?.run {
-                    cm.getNetworkCapabilities(cm.activeNetwork)?.run {
-                        when {
-                            hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
-                                result = 2
-                            }
-                            hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
-                                result = 1
-                            }
-                            hasTransport(NetworkCapabilities.TRANSPORT_VPN) -> {
-                                result = 3
-                            }
-                        }
-                    }
-                }
-            }
-            return result
-        }
-        @SuppressLint("UnsafeExperimentalUsageError")
-        override fun analyze(imageProxy: ImageProxy) {
-
+        return MLKitAnalyzer { imageProxy ->
             val mediaImage = imageProxy.image
             if (mediaImage != null) {
                 val rot = imageProxy.imageInfo.rotationDegrees
                 val bf = mediaImage.toBitmap(rot)
                 val b = if (rot == 90 || rot == 270) Bitmap.createBitmap(bf, bf.width / 2, 0, bf.width / 2, bf.height)
-                        else Bitmap.createBitmap(bf, 0, bf.height / 2, bf.width, bf.height / 2)
+                else Bitmap.createBitmap(bf, 0, bf.height / 2, bf.width, bf.height / 2)
                 Log.d(TAG, "Bitmap: (${mediaImage.width}, ${mediaImage.height}) Cropped: (${b.width}, ${b.height}), Rotation: ${imageProxy.imageInfo.rotationDegrees}"
                 )
 
@@ -229,77 +245,77 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
                     Log.d("$TAG/MLKit", "barcode: mode is $mode")
                     val start = System.currentTimeMillis()
                     var options: BarcodeScannerOptions = BarcodeScannerOptions.Builder()
-                        .setBarcodeFormats(Barcode.FORMAT_ALL_FORMATS)
-                        .build()
+                            .setBarcodeFormats(Barcode.FORMAT_ALL_FORMATS)
+                            .build()
                     when (mode) {
                         PDF_417.value -> {
                             options = BarcodeScannerOptions.Builder()
-                                .setBarcodeFormats(Barcode.FORMAT_PDF417)
-                                .build()
+                                    .setBarcodeFormats(Barcode.FORMAT_PDF417)
+                                    .build()
                         }
                         BARCODE.value -> {
                             options = BarcodeScannerOptions.Builder()
-                                .setBarcodeFormats(
-                                    Barcode.FORMAT_CODE_128,
-                                    Barcode.FORMAT_CODE_39,
-                                    Barcode.FORMAT_CODE_93,
-                                    Barcode.FORMAT_CODABAR,
-                                    Barcode.FORMAT_DATA_MATRIX,
-                                    Barcode.FORMAT_EAN_13,
-                                    Barcode.FORMAT_EAN_8,
-                                    Barcode.FORMAT_ITF,
-                                    Barcode.FORMAT_QR_CODE,
-                                    Barcode.FORMAT_UPC_A,
-                                    Barcode.FORMAT_UPC_E,
-                                    Barcode.FORMAT_AZTEC
-                                )
-                                .build()
+                                    .setBarcodeFormats(
+                                            Barcode.FORMAT_CODE_128,
+                                            Barcode.FORMAT_CODE_39,
+                                            Barcode.FORMAT_CODE_93,
+                                            Barcode.FORMAT_CODABAR,
+                                            Barcode.FORMAT_DATA_MATRIX,
+                                            Barcode.FORMAT_EAN_13,
+                                            Barcode.FORMAT_EAN_8,
+                                            Barcode.FORMAT_ITF,
+                                            Barcode.FORMAT_QR_CODE,
+                                            Barcode.FORMAT_UPC_A,
+                                            Barcode.FORMAT_UPC_E,
+                                            Barcode.FORMAT_AZTEC
+                                    )
+                                    .build()
                         }
                     }
                     val image = InputImage.fromBitmap(bf, imageProxy.imageInfo.rotationDegrees)
                     val scanner = BarcodeScanning.getClient(options)
                     Log.d("$TAG/MLKit", "barcode: process")
                     scanner.process(image)
-                        .addOnSuccessListener { barcodes ->
-                            val timeRequired = System.currentTimeMillis() - start
-                            val rawValue: String
-                            val cornersString: String
-                            Log.d("$TAG/MLKit", "barcode: success: $timeRequired ms")
-                            if (barcodes.isNotEmpty()) {
-                                //                                val bounds = barcode.boundingBox
-                                val corners = barcodes[0].cornerPoints
-                                val builder = StringBuilder()
-                                if (corners != null) {
-                                    for (corner in corners) {
-                                        builder.append("${corner.x},${corner.y} ")
+                            .addOnSuccessListener { barcodes ->
+                                val timeRequired = System.currentTimeMillis() - start
+                                val rawValue: String
+                                val cornersString: String
+                                Log.d("$TAG/MLKit", "barcode: success: $timeRequired ms")
+                                if (barcodes.isNotEmpty()) {
+                                    //                                val bounds = barcode.boundingBox
+                                    val corners = barcodes[0].cornerPoints
+                                    val builder = StringBuilder()
+                                    if (corners != null) {
+                                        for (corner in corners) {
+                                            builder.append("${corner.x},${corner.y} ")
+                                        }
                                     }
+                                    cornersString = builder.toString()
+                                    rawValue = barcodes[0].rawValue!!
+                                    //                                val valueType = barcode.valueType
+                                    val date = Calendar.getInstance().time
+                                    val formatter = SimpleDateFormat("yyyyMMddHHmmss")
+                                    val currentDateTime = formatter.format(date)
+                                    val imageCachePathFile = "${context.cacheDir}/Scanner-$currentDateTime.jpg"
+                                    bf.cacheImageToLocal(
+                                            imageCachePathFile,
+                                            imageProxy.imageInfo.rotationDegrees
+                                    )
+                                    val gson = Gson()
+                                    val jsonString = gson.toJson(BarcodeResult(
+                                            imageCachePathFile,
+                                            cornersString,
+                                            rawValue))
+                                    onAnalyzerResult.invoke(AnalyzerType.BARCODE, jsonString)
+                                } else {
+                                    Log.d("$TAG/MLKit", "barcode: nothing detected")
                                 }
-                                cornersString = builder.toString()
-                                rawValue = barcodes[0].rawValue!!
-                                //                                val valueType = barcode.valueType
-                                val date = Calendar.getInstance().time
-                                val formatter = SimpleDateFormat("yyyyMMddHHmmss")
-                                val currentDateTime = formatter.format(date)
-                                val imageCachePathFile = "${context.cacheDir}/Scanner-$currentDateTime.jpg"
-                                bf.cacheImageToLocal(
-                                    imageCachePathFile,
-                                    imageProxy.imageInfo.rotationDegrees
-                                )
-                                val gson = Gson()
-                                val jsonString = gson.toJson(BarcodeResult(
-                                    imageCachePathFile,
-                                    cornersString,
-                                    rawValue))
-                                onResult?.invoke(AnalyzerType.BARCODE, jsonString)
-                            } else {
-                                Log.d("$TAG/MLKit", "barcode: nothing detected")
+                                barcodeBusy = false
                             }
-                            barcodeBusy = false
-                        }
-                        .addOnFailureListener { e ->
-                            Log.d("$TAG/MLKit", "barcode: failure: ${e.message}")
-                            barcodeBusy = false
-                        }
+                            .addOnFailureListener { e ->
+                                Log.d("$TAG/MLKit", "barcode: failure: ${e.message}")
+                                barcodeBusy = false
+                            }
                 }
                 //MRZ
                 if (UIState.mlkit!! && !mlkitBusy) {
@@ -346,8 +362,6 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
                                             }]"
                                     )
                                     val record = MRZCleaner.parseAndClean(mrz)
-                                    //onResult?.invoke(AnalyzerType.MLKIT, record.toString())
-
                                     val date = Calendar.getInstance().time
                                     val formatter = SimpleDateFormat("yyyyMMddHHmmss")
                                     val currentDateTime = formatter.format(date)
@@ -372,11 +386,11 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
                                             record.surname,
                                             record.toMrz()
                                     ))
-                                    onResult?.invoke(AnalyzerType.MLKIT, jsonString)
+                                    onAnalyzerResult.invoke(AnalyzerType.MLKIT, jsonString)
                                 } catch (e: Exception) { // MrzParseException, IllegalArgumentException
                                     Log.d("$TAG/MLKit", e.toString())
                                 }
-                                onStat?.invoke(
+                                onAnalyzerStat.invoke(
                                         AnalyzerType.MLKIT,
                                         mlStartTime,
                                         System.currentTimeMillis()
@@ -385,13 +399,13 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
                             }
                             .addOnFailureListener { e ->
                                 Log.d("$TAG/MLKit", "TextRecognition: failure: ${e.message}")
-                                if (getConnectionType(context) == 0) {
+                                if (getConnectionType() == 0) {
                                     modelLayoutView.modelText.text = context.getString(R.string.connection_text)
                                 } else {
                                     modelLayoutView.modelText.text = context.getString(R.string.model_text)
                                 }
                                 modelLayoutView.modelText.visibility = View.VISIBLE
-                                onStat?.invoke(
+                                onAnalyzerStat.invoke(
                                         AnalyzerType.MLKIT,
                                         mlStartTime,
                                         System.currentTimeMillis()
@@ -404,141 +418,14 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    private fun openSettingsApp() {
-        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-        val uri = Uri.fromParts("package", packageName, null)
-        intent.data = uri
-        startActivity(intent)
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<String>, grantResults:
-        IntArray) {
-        if (requestCode == REQUEST_CODE_PERMISSIONS) {
-            if (allPermissionsGranted()) {
-                startCamera()
-            } else {
-                val snackBar: Snackbar = Snackbar.make(
-                    CoordinatorLayoutView,
-                    R.string.required_perms_not_given, Snackbar.LENGTH_INDEFINITE
-                )
-                snackBar.setAction(R.string.settings) { openSettingsApp() }
-                snackBar.show()
-            }
-        }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_mrz)
-        modelLayoutView = findViewById(R.id.viewLayout)
-        CoordinatorLayoutView =  findViewById(R.id.CoordinatorLayout)
-        flashButton = findViewById(R.id.flash_button)
-        rectangle = findViewById(R.id.rectimage)
-        findViewById<View>(R.id.close_button).setOnClickListener(this)
-        flashButton?.setOnClickListener(this)
-        context = applicationContext
-        val intent = intent
-        mode = intent.getStringExtra("mode")
-        when (mode) {
-            MRZ.value -> {
-                mlkitCheckbox.isChecked = true
-            }
-            PDF_417.value  -> {
-
-            }
-            BARCODE.value -> {
-            }
-        }
-        UIState.mlkit = mlkitCheckbox.isChecked
-        // Request camera permissions
-        if (allPermissionsGranted()) {
-            startCamera()
-        } else {
-            ActivityCompat.requestPermissions(
-                this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
-        }
-
-        outputDirectory = getOutputDirectory()
-        cameraExecutor = Executors.newSingleThreadExecutor()
-
-        // TODO: This will not work if the file is updated in the APK, need to handle versioning
-        if (!FileUtils.tesseractPathExists(this)) {
-            if (FileUtils.createTesseractSubDir(this)) {
-                FileUtils.copyFilesToSdCard(this)
-            } else {
-                //Timber.e(this.getClass().getSimpleName(), "Unknown file error. Cannot create subdirectory tessdata");
-                Log.e(TAG, "Unknown file error. Cannot create subdirectory tessdata")
-            }
-        }
-
-        val extDirPath: String = getExternalFilesDir(null)!!.absolutePath
-        Log.d(TAG, "path: $extDirPath")
-    }
-
-    private fun startCamera() {
-
-        this.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
-
-        cameraProviderFuture.addListener({
-            // Used to bind the lifecycle of cameras to the lifecycle owner
-            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
-
-            // Preview
-            preview = Preview.Builder()
-              //.setTargetAspectRatio(AspectRatio.RATIO_4_3)
-                .build()
-
-            var size = Size(480, 640)
-            if (mode == PDF_417.value) size = Size(1080, 1920)
-            imageAnalyzer = ImageAnalysis.Builder()
-               //.setTargetAspectRatio(AspectRatio.RATIO_4_3)
-                .setTargetResolution(size)
-                //.setTargetResolution(Size(640, 480))
-                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                .build()
-                .also {
-                    val mrzAnalyzer = MLKitAnalyzer(onAnalyzerResult, ::getUIState, onAnalyzerStat, getExternalFilesDir(null)!!.absolutePath + "/Debug")
-                    it.setAnalyzer(cameraExecutor, mrzAnalyzer)
-                }
-
-            // Select back camera
-            val cameraSelector = CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
-
-            try {
-                // Unbind use cases before rebinding
-                cameraProvider.unbindAll()
-
-                // Bind use cases to camera
-                // camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalyzer, tessImageAnalyzer)
-                camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalyzer)
-                //camera!!.cameraControl.enableTorch(true)
-
-                preview?.setSurfaceProvider(viewFinder.createSurfaceProvider())
-
-                Log.d(TAG, "Measured size: ${viewFinder.width}x${viewFinder.height}")
-
-                startScanTime = System.currentTimeMillis()
-                tessStartScanTime = startScanTime
-            } catch(exc: Exception) {
-                Log.e(TAG, "Use case binding failed", exc)
-            }
-
-        }, ContextCompat.getMainExecutor(this))
-    }
-
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(
             baseContext, it) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun getOutputDirectory(): File {
-        val mediaDir = externalMediaDirs.firstOrNull()?.let {
-            File(it, resources.getString(R.string.app_name)).apply { mkdirs() } }
-        return if (mediaDir != null && mediaDir.exists())
-            mediaDir else filesDir
+        val mediaDir = externalMediaDirs.firstOrNull()?.let { File(it, resources.getString(R.string.app_name)).apply { mkdirs() } }
+        return if (mediaDir != null && mediaDir.exists()) mediaDir else filesDir
     }
 
     fun onMlkitCheckboxClicked(view: View) {
