@@ -46,7 +46,20 @@
             app:layout_constraintBottom_toTopOf="@+id/bottom"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/top"></ImageView>
+            app:layout_constraintTop_toTopOf="@+id/top"/>
+
+        <TextView
+            android:id="@+id/captureLabelText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:layout_marginTop="36dp"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textDirection="anyRtl"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/rectimage"/>
 
         <TextView
             android:id="@+id/modelText"
@@ -73,9 +86,7 @@
         app:layout_constraintDimensionRatio="3:4"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-    </androidx.camera.view.PreviewView>
+        app:layout_constraintTop_toTopOf="parent"/>
 
     <LinearLayout
         android:id="@+id/debugLayout"
@@ -96,21 +107,11 @@
             android:orientation="vertical"
             android:paddingHorizontal="1dp">
 
-            <Switch
-                android:id="@+id/mlkitCheckbox"
-                android:layout_width="match_parent"
-                android:layout_height="24dp"
-                android:checked="false"
-                android:onClick="onMlkitCheckboxClicked"
-                android:text="@string/mlkit"
-                android:textColor="@color/white" />
-
             <TextView
                 android:id="@+id/mlkitText"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:fontFamily="monospace"
-                android:inputType="textFilter|textMultiLine|textNoSuggestions"
                 android:textColor="@color/white"
                 android:textSize="9sp" />
 
@@ -118,7 +119,6 @@
                 android:id="@+id/mlkitMS"
                 android:layout_width="match_parent"
                 android:layout_height="20dp"
-                android:inputType="textNoSuggestions"
                 android:textColor="@color/white"
                 android:textSize="11sp" />
 
@@ -126,51 +126,6 @@
                 android:id="@+id/mlkitTime"
                 android:layout_width="match_parent"
                 android:layout_height="20dp"
-                android:inputType="textNoSuggestions"
-                android:textColor="@color/white"
-                android:textSize="11sp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginStart="1dp"
-            android:layout_weight="1"
-            android:background="@color/transparent_grey"
-            android:orientation="vertical"
-            android:paddingHorizontal="1dp">
-
-            <Switch
-                android:id="@+id/tesseractCheckbox"
-                android:layout_width="match_parent"
-                android:layout_height="24dp"
-                android:checked="false"
-                android:onClick="onTesseractCheckboxClicked"
-                android:text="@string/tesseract"
-                android:textColor="@color/white" />
-
-            <TextView
-                android:id="@+id/tesseractText"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:fontFamily="monospace"
-                android:inputType="textFilter|textMultiLine|textNoSuggestions"
-                android:textColor="@color/white"
-                android:textSize="9sp" />
-
-            <TextView
-                android:id="@+id/tesseractMS"
-                android:layout_width="match_parent"
-                android:layout_height="20dp"
-                android:inputType="textNoSuggestions"
-                android:textColor="@color/white"
-                android:textSize="11sp" />
-
-            <TextView
-                android:id="@+id/tesseractTime"
-                android:layout_width="match_parent"
-                android:layout_height="20dp"
-                android:inputType="textNoSuggestions"
                 android:textColor="@color/white"
                 android:textSize="11sp" />
         </LinearLayout>
@@ -184,6 +139,5 @@
         android:layout_height="wrap_content"
         android:layout_gravity="top"
         android:elevation="10dp" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>
