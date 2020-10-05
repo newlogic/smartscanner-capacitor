@@ -21,6 +21,7 @@ import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import com.google.mlkit.vision.barcode.Barcode
@@ -30,6 +31,7 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.newlogic.mlkitlib.R
 import com.newlogic.mlkitlib.innovatrics.barcode.BarcodeResult
+import com.newlogic.mlkitlib.newlogic.config.Fonts
 import com.newlogic.mlkitlib.newlogic.config.Modes.BARCODE
 import com.newlogic.mlkitlib.newlogic.config.Modes.PDF_417
 import com.newlogic.mlkitlib.newlogic.config.ReaderConfig
@@ -117,6 +119,7 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
             mode = it.mode
             flashButton?.visibility = if (it.withFlash) VISIBLE else GONE
             captureLabelText.text = it.label
+            if (it.font == Fonts.NOTO_SANS_ARABIC.value) captureLabelText.typeface = ResourcesCompat.getFont(this, R.font.notosansarabic_bold)
         }
 
     }

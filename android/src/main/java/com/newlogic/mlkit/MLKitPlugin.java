@@ -47,10 +47,12 @@ public class MLKitPlugin extends Plugin {
             Activity activity = getActivity();
             Intent intent = new Intent(activity, MLKitActivity.class);
             try {
+                String font = config.getString("font");
+                String language = config.getString("language");
                 String mode = config.getString("mode");
                 String label = config.getString("label");
                 boolean withFlash = config.getBoolean("withFlash");
-                ReaderConfig readerConfig = new ReaderConfig("", "", label, mode, withFlash);
+                ReaderConfig readerConfig = new ReaderConfig(font, language, label, mode, withFlash);
                 intent.putExtra(MLKitActivity.MLKIT_CONFIG, readerConfig);
             } catch (JSONException e) {
                 e.printStackTrace();
