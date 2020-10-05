@@ -1,4 +1,4 @@
-package com.newlogic.mlkitlib.newlogic.utils
+package com.newlogic.mlkitlib.newlogic.config
 
 enum class Modes (val value : String) {
     BARCODE("barcode"),

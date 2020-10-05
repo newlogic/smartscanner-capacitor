@@ -15,7 +15,7 @@ import android.util.Log
 import android.util.Size
 import android.view.MotionEvent
 import android.view.View
-import android.widget.Switch
+import android.view.View.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -30,12 +30,16 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.newlogic.mlkitlib.R
 import com.newlogic.mlkitlib.innovatrics.barcode.BarcodeResult
+import com.newlogic.mlkitlib.newlogic.config.Modes.BARCODE
+import com.newlogic.mlkitlib.newlogic.config.Modes.PDF_417
+import com.newlogic.mlkitlib.newlogic.config.ReaderConfig
 import com.newlogic.mlkitlib.newlogic.extension.cacheImageToLocal
 import com.newlogic.mlkitlib.newlogic.extension.getConnectionType
 import com.newlogic.mlkitlib.newlogic.extension.toBitmap
-import com.newlogic.mlkitlib.newlogic.utils.*
-import com.newlogic.mlkitlib.newlogic.utils.Modes.BARCODE
-import com.newlogic.mlkitlib.newlogic.utils.Modes.PDF_417
+import com.newlogic.mlkitlib.newlogic.utils.AnalyzerType
+import com.newlogic.mlkitlib.newlogic.utils.MLKitAnalyzer
+import com.newlogic.mlkitlib.newlogic.utils.MRZCleaner
+import com.newlogic.mlkitlib.newlogic.utils.MRZResult
 import kotlinx.android.synthetic.main.activity_mrz.*
 import kotlinx.android.synthetic.main.activity_mrz.view.*
 import java.io.File
@@ -50,7 +54,8 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
 
     companion object {
         const val TAG = "MLKitActivity"
-        const val MLKIT_RESULT = "MLKitResult"
+        const val MLKIT_RESULT = "MLKIT_RESULT"
+        const val MLKIT_CONFIG = "MLKIT_CONFIG"
         private const val REQUEST_CODE_PERMISSIONS = 10
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
@@ -60,11 +65,6 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
 
         private var mode: String? = null
         private var rectangle: View? = null
-
-        private object UIState {
-            var mlkit: Boolean? = false
-            var debug: Boolean? = false
-        }
     }
 
     private var x = 0f
@@ -73,6 +73,7 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
     private var imageAnalyzer: ImageAnalysis? = null
     private var camera: Camera? = null
     private var flashButton: View? = null
+    private var closeButton: View? = null
     private var startScanTime: Long = 0
     private var tessStartScanTime: Long = 0
     private var onAnalyzerResult: (AnalyzerType, String) -> Unit = { a, b -> getAnalyzerResult(a, b) }
@@ -86,49 +87,43 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_mrz)
+        context = applicationContext
+        // assign layout ids
         modelLayoutView = findViewById(R.id.viewLayout)
         CoordinatorLayoutView =  findViewById(R.id.CoordinatorLayout)
         flashButton = findViewById(R.id.flash_button)
+        closeButton = findViewById(R.id.close_button)
         rectangle = findViewById(R.id.rectimage)
-        findViewById<View>(R.id.close_button).setOnClickListener(this)
-        flashButton?.setOnClickListener(this)
-        context = applicationContext
-        val intent = intent
-        mode = intent.getStringExtra("mode")
-        when (mode) {
-            Modes.MRZ.value -> { mlkitCheckbox.isChecked = true }
-            PDF_417.value  -> { }
-            BARCODE.value -> { }
-        }
-        UIState.mlkit = mlkitCheckbox.isChecked
         // Request camera permissions
         if (allPermissionsGranted()) {
             startCamera()
         } else {
             ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
         }
+        // setup config for reader
+        setupConfiguration(intent.getParcelableExtra(MLKIT_CONFIG))
+        // assign click listeners
+        closeButton?.setOnClickListener(this)
+        flashButton?.setOnClickListener(this)
 
         outputDirectory = getOutputDirectory()
         cameraExecutor = Executors.newSingleThreadExecutor()
-
-        // TODO: This will not work if the file is updated in the APK, need to handle versioning
-        if (!FileUtils.tesseractPathExists(this)) {
-            if (FileUtils.createTesseractSubDir(this)) {
-                FileUtils.copyFilesToSdCard(this)
-            } else {
-                //Timber.e(this.getClass().getSimpleName(), "Unknown file error. Cannot create subdirectory tessdata");
-                Log.e(TAG, "Unknown file error. Cannot create subdirectory tessdata")
-            }
-        }
-
         val extDirPath: String = getExternalFilesDir(null)!!.absolutePath
         Log.d(TAG, "path: $extDirPath")
     }
 
+    private fun setupConfiguration(readerConfig: ReaderConfig?) {
+        readerConfig?.let {
+            mode = it.mode
+            flashButton?.visibility = if (it.withFlash) VISIBLE else GONE
+            captureLabelText.text = it.label
+        }
+
+    }
+
 
     override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<String>, grantResults:
-        IntArray) {
+        requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         if (requestCode == REQUEST_CODE_PERMISSIONS) {
             if (allPermissionsGranted()) {
                 startCamera()
@@ -192,13 +187,12 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
         }, ContextCompat.getMainExecutor(this))
     }
 
-    private fun getAnalyzerResult(analyzerType: AnalyzerType, result: String): Unit {
+    private fun getAnalyzerResult(analyzerType: AnalyzerType, result: String) {
         runOnUiThread {
             when (analyzerType) {
                 AnalyzerType.MLKIT -> {
                     Log.d(TAG, "Success from MLKit")
-                    mlkitCheckbox.isChecked = false
-                    onMlkitCheckboxClicked(mlkitCheckbox)
+                    Log.d(TAG, "value: $result")
                     mlkitText.text = result
                 }
                 AnalyzerType.BARCODE -> {
@@ -213,7 +207,7 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    private fun getAnalyzerStat(analyzerType: AnalyzerType, startTime: Long, endTime: Long): Unit {
+    private fun getAnalyzerStat(analyzerType: AnalyzerType, startTime: Long, endTime: Long) {
         runOnUiThread {
             val analyzerTime = endTime - startTime
             if (analyzerType == AnalyzerType.MLKIT) {
@@ -234,10 +228,9 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
             if (mediaImage != null) {
                 val rot = imageProxy.imageInfo.rotationDegrees
                 val bf = mediaImage.toBitmap(rot)
-                val b = if (rot == 90 || rot == 270) Bitmap.createBitmap(bf, bf.width / 2, 0, bf.width / 2, bf.height)
+                val cropped = if (rot == 90 || rot == 270) Bitmap.createBitmap(bf, bf.width / 2, 0, bf.width / 2, bf.height)
                 else Bitmap.createBitmap(bf, 0, bf.height / 2, bf.width, bf.height / 2)
-                Log.d(TAG, "Bitmap: (${mediaImage.width}, ${mediaImage.height}) Cropped: (${b.width}, ${b.height}), Rotation: ${imageProxy.imageInfo.rotationDegrees}"
-                )
+                Log.d(TAG, "Bitmap: (${mediaImage.width}, ${mediaImage.height}) Cropped: (${cropped.width}, ${cropped.height}), Rotation: ${imageProxy.imageInfo.rotationDegrees}")
 
                 //barcode and pdf417
                 if (!barcodeBusy && ((mode == PDF_417.value) || (mode == BARCODE.value))) {
@@ -294,7 +287,7 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
                                     rawValue = barcodes[0].rawValue!!
                                     //                                val valueType = barcode.valueType
                                     val date = Calendar.getInstance().time
-                                    val formatter = SimpleDateFormat("yyyyMMddHHmmss")
+                                    val formatter = SimpleDateFormat("yyyyMMddHHmmss", Locale.ROOT)
                                     val currentDateTime = formatter.format(date)
                                     val imageCachePathFile = "${context.cacheDir}/Scanner-$currentDateTime.jpg"
                                     bf.cacheImageToLocal(
@@ -318,10 +311,10 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
                             }
                 }
                 //MRZ
-                if (UIState.mlkit!! && !mlkitBusy) {
+                if (!mlkitBusy) {
                     mlkitBusy = true
                     val mlStartTime = System.currentTimeMillis()
-                    val image = InputImage.fromBitmap(b, imageProxy.imageInfo.rotationDegrees)
+                    val image = InputImage.fromBitmap(cropped, imageProxy.imageInfo.rotationDegrees)
 
                     // Pass image to an ML Kit Vision API
                     val recognizer = TextRecognition.getClient()
@@ -329,7 +322,7 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
                     val start = System.currentTimeMillis()
                     recognizer.process(image)
                             .addOnSuccessListener { visionText ->
-                                modelLayoutView.modelText.visibility = View.INVISIBLE
+                                modelLayoutView.modelText.visibility = INVISIBLE
                                 val timeRequired = System.currentTimeMillis() - start
 
                                 Log.d("$TAG/MLKit", "TextRecognition: success: $timeRequired ms")
@@ -363,15 +356,15 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
                                     )
                                     val record = MRZCleaner.parseAndClean(mrz)
                                     val date = Calendar.getInstance().time
-                                    val formatter = SimpleDateFormat("yyyyMMddHHmmss")
+                                    val formatter = SimpleDateFormat("yyyyMMddHHmmss", Locale.ROOT)
                                     val currentDateTime = formatter.format(date)
-                                    val imageCachePathFile = "${context.cacheDir}/Scanner-$currentDateTime.jpg"
-                                    bf.cacheImageToLocal(imageCachePathFile, imageProxy.imageInfo.rotationDegrees)
+                                    val imagePathFile = "${context.filesDir}/Scanner-$currentDateTime.jpg"
+                                    bf.cacheImageToLocal(imagePathFile, imageProxy.imageInfo.rotationDegrees)
 
                                     // record to json
                                     val gson = Gson()
                                     val jsonString = gson.toJson(MRZResult(
-                                            imageCachePathFile,
+                                            imagePathFile,
                                             record.code.toString(),
                                             record.code1.toShort(),
                                             record.code2.toShort(),
@@ -404,7 +397,7 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
                                 } else {
                                     modelLayoutView.modelText.text = context.getString(R.string.model_text)
                                 }
-                                modelLayoutView.modelText.visibility = View.VISIBLE
+                                modelLayoutView.modelText.visibility = VISIBLE
                                 onAnalyzerStat.invoke(
                                         AnalyzerType.MLKIT,
                                         mlStartTime,
@@ -419,27 +412,12 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
-        ContextCompat.checkSelfPermission(
-            baseContext, it) == PackageManager.PERMISSION_GRANTED
+        ContextCompat.checkSelfPermission(baseContext, it) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun getOutputDirectory(): File {
         val mediaDir = externalMediaDirs.firstOrNull()?.let { File(it, resources.getString(R.string.app_name)).apply { mkdirs() } }
         return if (mediaDir != null && mediaDir.exists()) mediaDir else filesDir
-    }
-
-    fun onMlkitCheckboxClicked(view: View) {
-        if (view is Switch) {
-            val checked: Boolean = view.isChecked
-            UIState.mlkit = checked
-            Log.d(TAG, "UIState.mlkit: ${UIState.mlkit}")
-            if (checked) {
-                startScanTime = System.currentTimeMillis()
-                mlkitText.text = ""
-                mlkitMS.text = ""
-                mlkitTime.text = ""
-            }
-        }
     }
 
     override fun onClick(view: View) {
@@ -499,9 +477,9 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
                     val deltaY = event.y - y
                     if (deltaY < -minDistance) {
                         // Toast.makeText(this, "bottom2up swipe: $y1, $y2 -> $deltaY", Toast.LENGTH_SHORT).show()
-                        debugLayout.visibility = View.VISIBLE
+                        debugLayout.visibility = VISIBLE
                     } else if (deltaY > minDistance) {
-                        debugLayout.visibility = View.INVISIBLE
+                        debugLayout.visibility = INVISIBLE
                     }
                 }
             }
