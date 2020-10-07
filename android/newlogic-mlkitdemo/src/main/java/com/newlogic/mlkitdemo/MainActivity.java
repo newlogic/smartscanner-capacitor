@@ -77,6 +77,6 @@ public class MainActivity extends AppCompatActivity {
                 "NOTO_SANS_ARABIC",
                 "ARABIC", "الكرامة والحقوق. وقد وهبوا عقلاً",
                 "mrz",
-                false);
+                true);
     }
 }

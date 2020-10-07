@@ -5,7 +5,7 @@
     android:layout_height="@dimen/top_action_bar_height"
     android:paddingStart="@dimen/top_action_bar_padding_horizontal"
     android:paddingEnd="@dimen/top_action_bar_padding_horizontal"
-    android:background="@drawable/top_action_bar_scrim">
+    android:background="@color/transparent">
 
   <ImageView
       android:id="@+id/flash_button"
@@ -13,6 +13,7 @@
       android:layout_height="wrap_content"
       android:layout_gravity="start"
       android:padding="@dimen/top_action_button_padding"
+      app:tint="@color/white"
       android:contentDescription="@string/cd_flash_button"
       app:srcCompat="@drawable/camera_flash"/>
 
@@ -21,6 +22,7 @@
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_alignParentEnd="true"
+      app:tint="@color/white"
       android:padding="@dimen/top_action_button_padding"
       android:contentDescription="@string/cd_close_button"
       app:srcCompat="@drawable/ic_close_vd_white_24"/>

@@ -78,8 +78,6 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
     private var closeButton: View? = null
     private var startScanTime: Long = 0
     private var tessStartScanTime: Long = 0
-    private var onAnalyzerResult: (AnalyzerType, String) -> Unit = { a, b -> getAnalyzerResult(a, b) }
-    private var onAnalyzerStat: (AnalyzerType, Long, Long) -> Unit = { a, b: Long, c: Long -> getAnalyzerStat(a, b, c) }
 
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
@@ -190,7 +188,7 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
         }, ContextCompat.getMainExecutor(this))
     }
 
-    private fun getAnalyzerResult(analyzerType: AnalyzerType, result: String) {
+    private fun getAnalyzerResult (analyzerType: AnalyzerType, result: String) {
         runOnUiThread {
             when (analyzerType) {
                 AnalyzerType.MLKIT -> {
@@ -210,7 +208,7 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    private fun getAnalyzerStat(analyzerType: AnalyzerType, startTime: Long, endTime: Long) {
+    private fun getAnalyzerStat (analyzerType: AnalyzerType, startTime: Long, endTime: Long) {
         runOnUiThread {
             val analyzerTime = endTime - startTime
             if (analyzerType == AnalyzerType.MLKIT) {
@@ -302,7 +300,7 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
                                             imageCachePathFile,
                                             cornersString,
                                             rawValue))
-                                    onAnalyzerResult.invoke(AnalyzerType.BARCODE, jsonString)
+                                    getAnalyzerResult (AnalyzerType.BARCODE, jsonString)
                                 } else {
                                     Log.d("$TAG/MLKit", "barcode: nothing detected")
                                 }
@@ -361,7 +359,7 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
                                     val date = Calendar.getInstance().time
                                     val formatter = SimpleDateFormat("yyyyMMddHHmmss", Locale.ROOT)
                                     val currentDateTime = formatter.format(date)
-                                    val imagePathFile = "${context.filesDir}/Scanner-$currentDateTime.jpg"
+                                    val imagePathFile = "${context.cacheDir}/Scanner-$currentDateTime.jpg"
                                     bf.cacheImageToLocal(imagePathFile, imageProxy.imageInfo.rotationDegrees)
 
                                     // record to json
@@ -382,11 +380,11 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
                                             record.surname,
                                             record.toMrz()
                                     ))
-                                    onAnalyzerResult.invoke(AnalyzerType.MLKIT, jsonString)
+                                    getAnalyzerResult (AnalyzerType.MLKIT, jsonString)
                                 } catch (e: Exception) { // MrzParseException, IllegalArgumentException
                                     Log.d("$TAG/MLKit", e.toString())
                                 }
-                                onAnalyzerStat.invoke(
+                                getAnalyzerStat (
                                         AnalyzerType.MLKIT,
                                         mlStartTime,
                                         System.currentTimeMillis()
@@ -401,7 +399,7 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
                                     modelLayoutView.modelText.text = context.getString(R.string.model_text)
                                 }
                                 modelLayoutView.modelText.visibility = VISIBLE
-                                onAnalyzerStat.invoke(
+                                getAnalyzerStat (
                                         AnalyzerType.MLKIT,
                                         mlStartTime,
                                         System.currentTimeMillis()
