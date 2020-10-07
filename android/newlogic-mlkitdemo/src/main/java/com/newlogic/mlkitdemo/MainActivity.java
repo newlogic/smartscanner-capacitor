@@ -16,7 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.newlogic.mlkitlib.newlogic.MLKitActivity;
-import com.newlogic.mlkitlib.newlogic.config.ReaderConfig;
+import com.newlogic.mlkitlib.newlogic.config.Config;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void startScanningActivity(@NonNull View view) {
         Intent intent = new Intent(this, MLKitActivity.class);
-        ReaderConfig config = getSampleConfig();
+        Config config = getSampleConfig();
         intent.putExtra(MLKitActivity.MLKIT_CONFIG, config);
         startActivityForResult(intent, OP_MLKIT);
     }
@@ -72,8 +72,8 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, OP_MLKIT);
     }
 
-    private ReaderConfig getSampleConfig() {
-        return new ReaderConfig(
+    private Config getSampleConfig() {
+        return new Config(
                 "NOTO_SANS_ARABIC",
                 "ARABIC", "الكرامة والحقوق. وقد وهبوا عقلاً",
                 "mrz",

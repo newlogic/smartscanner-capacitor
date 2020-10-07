@@ -31,10 +31,10 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.newlogic.mlkitlib.R
 import com.newlogic.mlkitlib.innovatrics.barcode.BarcodeResult
+import com.newlogic.mlkitlib.newlogic.config.Config
 import com.newlogic.mlkitlib.newlogic.config.Fonts
 import com.newlogic.mlkitlib.newlogic.config.Modes.BARCODE
 import com.newlogic.mlkitlib.newlogic.config.Modes.PDF_417
-import com.newlogic.mlkitlib.newlogic.config.ReaderConfig
 import com.newlogic.mlkitlib.newlogic.extension.cacheImageToLocal
 import com.newlogic.mlkitlib.newlogic.extension.getConnectionType
 import com.newlogic.mlkitlib.newlogic.extension.toBitmap
@@ -112,7 +112,7 @@ class MLKitActivity : AppCompatActivity(), View.OnClickListener {
         Log.d(TAG, "path: $extDirPath")
     }
 
-    private fun setupConfiguration(readerConfig: ReaderConfig?) {
+    private fun setupConfiguration(readerConfig: Config?) {
         readerConfig?.let {
             mode = it.mode
             flashButton?.visibility = if (it.withFlash) VISIBLE else GONE

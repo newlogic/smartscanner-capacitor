@@ -5,7 +5,7 @@ import com.newlogic.mlkitlib.newlogic.extension.empty
 import kotlinx.android.parcel.Parcelize
 
 @Parcelize
-data class ReaderConfig(
+data class Config(
         val font: String,
         val language: String,
         val label: String,
@@ -13,6 +13,6 @@ data class ReaderConfig(
         val withFlash: Boolean
 ) : Parcelable {
     companion object {
-        fun empty() = ReaderConfig(String.empty(), String.empty(), String.empty(), String.empty(), false)
+        fun empty() = Config(String.empty(), String.empty(), String.empty(), String.empty(), false)
     }
 }
