@@ -9,7 +9,7 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.newlogic.mlkitlib.newlogic.MLKitActivity;
-import com.newlogic.mlkitlib.newlogic.config.ReaderConfig;
+import com.newlogic.mlkitlib.newlogic.config.Config;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -52,7 +52,7 @@ public class MLKitPlugin extends Plugin {
                 String mode = config.getString("mode");
                 String label = config.getString("label");
                 boolean withFlash = config.getBoolean("withFlash");
-                ReaderConfig readerConfig = new ReaderConfig(font, language, label, mode, withFlash);
+                Config readerConfig = new Config(font, language, label, mode, withFlash);
                 intent.putExtra(MLKitActivity.MLKIT_CONFIG, readerConfig);
             } catch (JSONException e) {
                 e.printStackTrace();
