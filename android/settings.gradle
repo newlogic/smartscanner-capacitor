@@ -1,2 +1,6 @@
+include ':demo'
+include ':mlkit'
 include ':capacitor-android'
 project(':capacitor-android').projectDir = new File('../node_modules/@capacitor/android/capacitor')
+project(':mlkit').projectDir = new File(rootDir, 'newlogic-mlkitlibrary/mlkit/')
+project(':demo').projectDir = new File(rootDir, 'newlogic-mlkitlibrary/demo/')

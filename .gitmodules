@@ -1,0 +1,3 @@
+[submodule "android/newlogic-mlkitlibrary"]
+	path = android/newlogic-mlkitlibrary
+	url = git@github.com:newlogic/mlkitlibrary.git
