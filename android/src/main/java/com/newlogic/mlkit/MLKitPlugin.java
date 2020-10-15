@@ -40,6 +40,7 @@ public class MLKitPlugin extends Plugin {
     @PluginMethod
     public void executeMLKit(PluginCall call) {
         JSONObject config = call.getObject("config");
+        String mode = call.getString("mode");
         String action = call.getString("action");
         saveCall(call);
         if (action.equals(START_MLKIT.getValue())) {
@@ -49,11 +50,10 @@ public class MLKitPlugin extends Plugin {
             try {
                 String font = config.getString("font");
                 String language = config.getString("language");
-                String mode = config.getString("mode");
                 String label = config.getString("label");
-                boolean withFlash = config.getBoolean("withFlash");
-                Config readerConfig = new Config(font, language, label, mode, withFlash);
-                intent.putExtra(MLKitActivity.MLKIT_CONFIG, readerConfig);
+                Config readerConfig = new Config(font, language, label);
+                intent.putExtra(MLKitActivity.MODE, mode);
+                intent.putExtra(MLKitActivity.CONFIG, readerConfig);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
