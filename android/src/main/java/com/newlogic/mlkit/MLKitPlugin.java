@@ -42,6 +42,7 @@ public class MLKitPlugin extends Plugin {
         JSONObject config = call.getObject("config");
         String mode = call.getString("mode");
         String action = call.getString("action");
+        String mrzFormat = call.getString("mrzFormat");
         saveCall(call);
         if (action.equals(START_MLKIT.getValue())) {
             Timber.d("executeMLKit %s", action);
@@ -49,10 +50,11 @@ public class MLKitPlugin extends Plugin {
             Intent intent = new Intent(activity, MLKitActivity.class);
             try {
                 String font = config.getString("font");
-                String language = config.getString("language");
                 String label = config.getString("label");
-                Config readerConfig = new Config(font, language, label);
+                String imageResultType = config.getString("imageResultType");
+                Config readerConfig = new Config(font, label, imageResultType);
                 intent.putExtra(MLKitActivity.MODE, mode);
+                intent.putExtra(MLKitActivity.MRZ_FORMAT, mrzFormat);
                 intent.putExtra(MLKitActivity.CONFIG, readerConfig);
             } catch (JSONException e) {
                 e.printStackTrace();
