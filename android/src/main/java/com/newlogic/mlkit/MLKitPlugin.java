@@ -40,8 +40,8 @@ public class MLKitPlugin extends Plugin {
     @PluginMethod
     public void executeMLKit(PluginCall call) {
         JSONObject config = call.getObject("config");
-        String mode = call.getString("mode");
         String action = call.getString("action");
+        String mode = call.getString("mode");
         String mrzFormat = call.getString("mrzFormat");
         saveCall(call);
         if (action.equals(START_MLKIT.getValue())) {
