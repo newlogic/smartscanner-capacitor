@@ -78,9 +78,14 @@ public class MLKitPlugin extends Plugin {
             if (resultCode == Activity.RESULT_OK) {
                 String returnedResult = data.getStringExtra(MLKitActivity.MLKIT_RESULT);
                 Timber.d("Plugin post MLKit Activity result %s", returnedResult);
-                JSObject ret = new JSObject();
-                ret.put(MLKitActivity.MLKIT_RESULT, returnedResult);
-                savedCall.success(ret);
+                try {
+                    JSONObject result = new JSONObject(returnedResult);
+                    JSObject ret = new JSObject();
+                    ret.put(MLKitActivity.MLKIT_RESULT, result);
+                    savedCall.success(ret);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 Timber.d("Plugin post MLKit Activity. RESULT CANCELLED");
                 savedCall.error("Scanning Cancelled.");
