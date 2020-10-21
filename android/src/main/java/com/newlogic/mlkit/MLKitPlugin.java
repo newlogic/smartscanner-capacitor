@@ -50,10 +50,11 @@ public class MLKitPlugin extends Plugin {
             Intent intent = new Intent(activity, MLKitActivity.class);
             try {
                 String background = config.getString("background");
+                boolean branding = config.getBoolean("branding");
                 String font = config.getString("font");
                 String label = config.getString("label");
                 String imageResultType = config.getString("imageResultType");
-                Config readerConfig = new Config(background, font, label, imageResultType);
+                Config readerConfig = new Config(branding, background, font, label, imageResultType);
                 intent.putExtra(MLKitActivity.MODE, mode);
                 intent.putExtra(MLKitActivity.MRZ_FORMAT, mrzFormat);
                 intent.putExtra(MLKitActivity.CONFIG, readerConfig);
