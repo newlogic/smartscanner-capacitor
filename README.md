@@ -1,4 +1,4 @@
-# id-pass-smart-scanner-capacitor
+# idpass-smart-scanner-capacitor
 The repository for the Capacitor Plugin to be used with the Smart Scanner core library
 
 ## Prerequisites
