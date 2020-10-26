@@ -1,5 +1,5 @@
-# mlkit-capacitor-plugin
-The repository for the MLKit Plugin to be used with the Base MLKit Capacitor project
+# id-pass-smart-scanner-capacitor
+The repository for the Capacitor Plugin to be used with the Smart Scanner core library
 
 ## Prerequisites
 
