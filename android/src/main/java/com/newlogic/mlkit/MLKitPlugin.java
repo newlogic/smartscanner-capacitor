@@ -18,6 +18,25 @@ import timber.log.Timber;
 
 import static com.newlogic.mlkitlib.newlogic.config.Actions.START_MLKIT;
 
+/**
+ * Sample capacitor call:
+ * ===============================================================================
+ * const result = await MLKitPlugin.executeMLKit({
+ *         action: 'START_MLKIT',
+ *         mode: 'mrz',
+ *         mrzFormat: 'MRTD_TD1', // Format MRTD_TD1, but default is MRP
+ *         config: {
+ *           branding: false, // if true, ID pass branding will appear
+ *           background: '#ffc234', // default color gray if empty, will accept hex color values only
+ *           font: 'NOTO_SANS_ARABIC',
+ *           imageResultType: 'base_64', // default path if empty or not set to base64
+ *           label: 'التقط الصورة',
+ *           isManualCapture: true // if true, manual capture button will appear
+ *         }
+ *      }
+ *  );
+ * ==================================================================================
+* */
 @NativePlugin(requestCodes = {MLKitPlugin.REQUEST_OP_MLKIT})
 public class MLKitPlugin extends Plugin {
 
@@ -50,11 +69,12 @@ public class MLKitPlugin extends Plugin {
             Intent intent = new Intent(activity, MLKitActivity.class);
             try {
                 String background = config.getString("background");
-                boolean branding = config.getBoolean("branding");
                 String font = config.getString("font");
                 String label = config.getString("label");
                 String imageResultType = config.getString("imageResultType");
-                Config readerConfig = new Config(branding, background, font, label, imageResultType);
+                boolean branding = config.getBoolean("branding");
+                boolean isManualCapture = call.getBoolean("isManualCapture");
+                Config readerConfig = new Config(branding, background, font,imageResultType, label, isManualCapture);
                 intent.putExtra(MLKitActivity.MODE, mode);
                 intent.putExtra(MLKitActivity.MRZ_FORMAT, mrzFormat);
                 intent.putExtra(MLKitActivity.CONFIG, readerConfig);
