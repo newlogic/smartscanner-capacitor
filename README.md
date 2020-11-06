@@ -10,10 +10,10 @@ The repository for the Capacitor Plugin to be used with the Smart Scanner core l
 
 ```bash
 # 1. Clone this repository.
-git clone https://github.com/newlogic/mlkit-capacitor-plugin.git
+git clone https://github.com/newlogic/idpass-smart-scanner-capacitor.git
 
 # 2. Enter your newly-cloned folder.
-cd mlkit-capacitor-plugin
+cd idpass-smart-scanner-capacitor
 
 # 3. Install root dependencies
 yarn install 
