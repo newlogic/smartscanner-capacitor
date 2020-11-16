@@ -7,6 +7,5 @@ declare module '@capacitor/core' {
 
 export interface MLKitPluginInterface {
   echo(options: { value: string }): Promise<{ value: string }>;
-  startMLActivity(options: { mode: string }): Promise< void >;
-  executeMLKit(options: { mode: string, action: string}): Promise< void >;
+  executeScanner(options: { mode: string, action: string}): Promise< void >;
 }

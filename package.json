@@ -1,6 +1,6 @@
 {
   "name": "mlkit-capacitor-plugin",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "The repository for the MLKit Plugin to be used with the Base MLKit Capacitor project",
   "main": "dist/plugin.js",
   "module": "dist/esm/index.js",
