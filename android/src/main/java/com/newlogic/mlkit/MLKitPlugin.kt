@@ -5,7 +5,6 @@ import android.content.Intent
 import com.getcapacitor.*
 import com.google.gson.Gson
 import com.newlogic.mlkitlib.newlogic.SmartScannerActivity
-import com.newlogic.mlkitlib.newlogic.config.Actions
 import com.newlogic.mlkitlib.newlogic.platform.ScannerOptions
 import org.json.JSONException
 import org.json.JSONObject
@@ -23,8 +22,8 @@ class MLKitPlugin : Plugin() {
         val action = call.getString("action")
         val options: JSONObject = call.getObject("options")
         saveCall(call)
-        if (action == Actions.START_MLKIT.value) {
-            Timber.d("executeMLKit %s", action)
+        if (action == "START_SCANNER") {
+            Timber.d("executeScanner %s", action)
             val activity: Activity = activity
             val intent = Intent(activity, SmartScannerActivity::class.java)
             val scannerOptions = Gson().fromJson(options.toString(), ScannerOptions::class.java)

@@ -16,7 +16,7 @@ export class MLKitPluginWeb extends WebPlugin implements MLKitPluginInterface {
   }
   
   async executeScanner(options: { mode: string, action: string }): Promise<void> {
-    console.log('startMLActivity', options);
+    console.log('executeScanner', options);
   }
 }
 
