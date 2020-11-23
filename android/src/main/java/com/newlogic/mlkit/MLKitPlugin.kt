@@ -4,8 +4,8 @@ import android.app.Activity
 import android.content.Intent
 import com.getcapacitor.*
 import com.google.gson.Gson
-import com.newlogic.mlkitlib.newlogic.SmartScannerActivity
-import com.newlogic.mlkitlib.newlogic.platform.ScannerOptions
+import com.newlogic.mlkitlib.idpass.SmartScannerActivity
+import com.newlogic.mlkitlib.idpass.config.ScannerOptions
 import org.json.JSONException
 import org.json.JSONObject
 import timber.log.Timber
@@ -38,10 +38,10 @@ class MLKitPlugin : Plugin() {
         super.handleOnActivityResult(requestCode, resultCode, data)
         val savedCall = savedCall ?: return
         if (requestCode == REQUEST_OP_SCANNER) {
-            Timber.d("Plugin post MLKit Activity resultCode %d", resultCode)
+            Timber.d("Plugin post SmartScannerActivity resultCode %d", resultCode)
             if (resultCode == Activity.RESULT_OK) {
                 val returnedResult = data.getStringExtra(SmartScannerActivity.MLKIT_RESULT)
-                Timber.d("Plugin post MLKit Activity result %s", returnedResult)
+                Timber.d("Plugin post SmartScannerActivity result %s", returnedResult)
                 try {
                     val result = JSONObject(returnedResult)
                     val ret = JSObject()
@@ -51,7 +51,7 @@ class MLKitPlugin : Plugin() {
                     e.printStackTrace()
                 }
             } else if (resultCode == Activity.RESULT_CANCELED) {
-                Timber.d("Plugin post MLKit Activity. RESULT CANCELLED")
+                Timber.d("Plugin post SmartScannerActivity RESULT CANCELLED")
                 savedCall.error("Scanning Cancelled.")
             } else {
                 savedCall.error("Scanning Failed.")
