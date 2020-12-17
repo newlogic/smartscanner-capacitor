@@ -4,8 +4,8 @@ import android.app.Activity
 import android.content.Intent
 import com.getcapacitor.*
 import com.google.gson.Gson
-import com.newlogic.mlkitlib.idpass.SmartScannerActivity
-import com.newlogic.mlkitlib.idpass.config.ScannerOptions
+import org.idpass.smartscanner.lib.SmartScannerActivity
+import org.idpass.smartscanner.lib.config.ScannerOptions
 import org.json.JSONException
 import org.json.JSONObject
 import timber.log.Timber
@@ -40,12 +40,12 @@ class MLKitPlugin : Plugin() {
         if (requestCode == REQUEST_OP_SCANNER) {
             Timber.d("Plugin post SmartScannerActivity resultCode %d", resultCode)
             if (resultCode == Activity.RESULT_OK) {
-                val returnedResult = data.getStringExtra(SmartScannerActivity.MLKIT_RESULT)
+                val returnedResult = data.getStringExtra(SmartScannerActivity.SCANNER_RESULT)
                 Timber.d("Plugin post SmartScannerActivity result %s", returnedResult)
                 try {
                     val result = JSONObject(returnedResult)
                     val ret = JSObject()
-                    ret.put(SmartScannerActivity.MLKIT_RESULT, result)
+                    ret.put(SmartScannerActivity.SCANNER_RESULT, result)
                     savedCall.success(ret)
                 } catch (e: JSONException) {
                     e.printStackTrace()
