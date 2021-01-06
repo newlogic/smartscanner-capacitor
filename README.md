@@ -35,9 +35,9 @@ const result = await SmartScannerPlugin.executeScanner({
     config: {
       background: '#89837c',
       branding: false,
-      isManualCapture: true
-    }
-  }
+      isManualCapture: true,
+    },
+  },
 });
 ```
 
@@ -61,14 +61,14 @@ const result = await SmartScannerPlugin.executeScanner({
         'QR_CODE',
         'UPC_A',
         'UPC_E',
-        'PDF_417'
-      ]
+        'PDF_417',
+      ],
     },
     config: {
       background: '#ffc234',
-      label: 'Sample Label'
-    }
-  }
+      label: 'Sample Label',
+    },
+  },
 });
 ```
 
@@ -76,7 +76,7 @@ Refer to the [API Reference](https://github.com/newlogic/smartscanner-capacitor/
 
 ## Related projects
 
-- [smartscanner-core](https://github.com/idpass/smartscanner-capacitor) - Android library for scanning MRZ, Barcode, and ID PASS Lite cards
+- [smartscanner-core](https://github.com/idpass/smartscanner-core) - Android library for scanning MRZ, Barcode, and ID PASS Lite cards
 - [smartscanner-android](https://github.com/idpass/smartscanner-android) - Provides convenience methods to simplify the SmartScanner intent call out process
 - [smartscanner-cordova](https://github.com/idpass/smartscanner-cordova) - SmartScanner [Cordova](https://cordova.apache.org/) plugin
 
