@@ -1,11 +1,11 @@
 
 declare module '@capacitor/core' {
   interface PluginRegistry {
-    MLKitPluginInterface: MLKitPluginInterface;
+    SmartScannerPluginInterface: SmartScannerPluginInterface;
   }
 }
 
-export interface MLKitPluginInterface {
+export interface SmartScannerPluginInterface {
   echo(options: { value: string }): Promise<{ value: string }>;
   executeScanner(options: { mode: string, action: string}): Promise< void >;
 }

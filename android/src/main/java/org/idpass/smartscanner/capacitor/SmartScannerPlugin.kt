@@ -1,17 +1,17 @@
-package com.newlogic.mlkit
+package org.idpass.smartscanner.capacitor
 
 import android.app.Activity
 import android.content.Intent
 import com.getcapacitor.*
 import com.google.gson.Gson
 import org.idpass.smartscanner.lib.SmartScannerActivity
-import org.idpass.smartscanner.lib.config.ScannerOptions
+import org.idpass.smartscanner.lib.scanner.config.ScannerOptions
 import org.json.JSONException
 import org.json.JSONObject
 import timber.log.Timber
 
-@NativePlugin(requestCodes = [MLKitPlugin.REQUEST_OP_SCANNER])
-class MLKitPlugin : Plugin() {
+@NativePlugin(requestCodes = [SmartScannerPlugin.REQUEST_OP_SCANNER])
+class SmartScannerPlugin : Plugin() {
 
     companion object {
         const val REQUEST_OP_SCANNER = 1001
@@ -34,13 +34,13 @@ class MLKitPlugin : Plugin() {
         }
     }
 
-    override fun handleOnActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+    override fun handleOnActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.handleOnActivityResult(requestCode, resultCode, data)
         val savedCall = savedCall ?: return
         if (requestCode == REQUEST_OP_SCANNER) {
             Timber.d("Plugin post SmartScannerActivity resultCode %d", resultCode)
             if (resultCode == Activity.RESULT_OK) {
-                val returnedResult = data.getStringExtra(SmartScannerActivity.SCANNER_RESULT)
+                val returnedResult = data?.getStringExtra(SmartScannerActivity.SCANNER_RESULT)
                 Timber.d("Plugin post SmartScannerActivity result %s", returnedResult)
                 try {
                     val result = JSONObject(returnedResult)

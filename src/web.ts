@@ -1,11 +1,11 @@
 import { WebPlugin } from '@capacitor/core';
-import { MLKitPluginInterface } from './definitions';
+import { SmartScannerPluginInterface } from './definitions';
 export * from './web';
 
-export class MLKitPluginWeb extends WebPlugin implements MLKitPluginInterface {
+export class SmartScannerPluginWeb extends WebPlugin implements SmartScannerPluginInterface {
   constructor() {
     super({
-      name: 'MLKitPlugin',
+      name: 'SmartScannerPlugin',
       platforms: ['web'],
     });
   }
@@ -20,9 +20,9 @@ export class MLKitPluginWeb extends WebPlugin implements MLKitPluginInterface {
   }
 }
 
-const MLKitPlugin = new MLKitPluginWeb();
+const SmartScannerPlugin = new SmartScannerPluginWeb();
 
-export { MLKitPluginInterface };
+export { SmartScannerPluginInterface };
 
 import { registerWebPlugin } from '@capacitor/core';
-registerWebPlugin(MLKitPlugin);
+registerWebPlugin(SmartScannerPlugin);

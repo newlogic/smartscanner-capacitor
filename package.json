@@ -1,7 +1,7 @@
 {
-  "name": "mlkit-capacitor-plugin",
+  "name": "smartscanner-capacitor",
   "version": "0.1.0",
-  "description": "The repository for the MLKit Plugin to be used with the Base MLKit Capacitor project",
+  "description": "The repository for the Capacitor Plugin to be used with the ID PASS SmartScanner core library",
   "main": "dist/plugin.js",
   "module": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
@@ -37,7 +37,7 @@
     "dist/",
     "ios/",
     "android/",
-    "MlkitCapacitorPlugin.podspec"
+    "SmartScannerCapacitorPlugin.podspec"
   ],
   "keywords": [
     "capacitor",
@@ -56,9 +56,9 @@
   "swiftlint": "@ionic/swiftlint-config",
   "repository": {
     "type": "git",
-    "url": "MLKitCapacitorPlugin"
+    "url": "SmartScannerCapacitorPlugin"
   },
   "bugs": {
-    "url": "https://github.com/newlogic/idpass-smart-scanner-capacitor/issues"
+    "url": "https://github.com/idpass/smartscanner-capacitor/issues"
   }
 }
