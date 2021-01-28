@@ -77,7 +77,7 @@ Refer to the [API Reference](https://github.com/newlogic/smartscanner-capacitor/
 ## Related projects
 
 - [smartscanner-core](https://github.com/idpass/smartscanner-core) - Android library for scanning MRZ, Barcode, and ID PASS Lite cards
-- [smartscanner-android](https://github.com/idpass/smartscanner-android) - Provides convenience methods to simplify the SmartScanner intent call out process
+- [smartscanner-android-api](https://github.com/idpass/smartscanner-android-api) - Provides convenience methods to simplify the SmartScanner intent call out process
 - [smartscanner-cordova](https://github.com/idpass/smartscanner-cordova) - SmartScanner [Cordova](https://cordova.apache.org/) plugin
 
 ## License
