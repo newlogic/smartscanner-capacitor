@@ -38,23 +38,28 @@ class SmartScannerPlugin : Plugin() {
         super.handleOnActivityResult(requestCode, resultCode, data)
         val savedCall = savedCall ?: return
         if (requestCode == REQUEST_OP_SCANNER) {
-            Timber.d("Plugin post SmartScannerActivity resultCode %d", resultCode)
-            if (resultCode == Activity.RESULT_OK) {
-                val returnedResult = data?.getStringExtra(SmartScannerActivity.SCANNER_RESULT)
-                Timber.d("Plugin post SmartScannerActivity result %s", returnedResult)
-                try {
-                    val result = JSONObject(returnedResult)
-                    val ret = JSObject()
-                    ret.put(SmartScannerActivity.SCANNER_RESULT, result)
-                    savedCall.success(ret)
-                } catch (e: JSONException) {
-                    e.printStackTrace()
+            try {
+                Timber.d("Plugin post SmartScannerActivity resultCode %d", resultCode)
+                if (resultCode == Activity.RESULT_OK) {
+                    val returnedResult = data?.getStringExtra(SmartScannerActivity.SCANNER_RESULT)
+                    Timber.d("Plugin post SmartScannerActivity result %s", returnedResult)
+                    try {
+                        val result = JSONObject(returnedResult)
+                        val ret = JSObject()
+                        ret.put(SmartScannerActivity.SCANNER_RESULT, result)
+                        savedCall.success(ret)
+                    } catch (e: JSONException) {
+                        e.printStackTrace()
+                    }
+                } else if (resultCode == Activity.RESULT_CANCELED) {
+                    Timber.d("Plugin post SmartScannerActivity RESULT CANCELLED")
+                    savedCall.error("Scanning Cancelled.")
+                } else {
+                    savedCall.error("Scanning Failed.")
                 }
-            } else if (resultCode == Activity.RESULT_CANCELED) {
-                Timber.d("Plugin post SmartScannerActivity RESULT CANCELLED")
-                savedCall.error("Scanning Cancelled.")
-            } else {
-                savedCall.error("Scanning Failed.")
+            } catch (exception: Exception) {
+                Timber.e(exception)
+                exception.printStackTrace()
             }
         } else {
             savedCall.error("Unknown Request Code!")
