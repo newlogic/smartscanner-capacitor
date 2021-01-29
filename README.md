@@ -8,10 +8,10 @@ This plugin can be installed from NPM:
 
 ```bash
 # Using npm
-npm install smartscanner-capacitor
+npm install @idpass/smartscanner-capacitor
 
 # Using yarn
-yarn add smartscanner-capacitor
+yarn add @idpass/smartscanner-capacitor
 ```
 
 ## Usage

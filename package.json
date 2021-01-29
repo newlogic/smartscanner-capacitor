@@ -1,7 +1,7 @@
 {
-  "name": "smartscanner-capacitor",
-  "version": "0.1.0",
-  "description": "The repository for the Capacitor Plugin to be used with the ID PASS SmartScanner core library",
+  "name": "@idpass/smartscanner-capacitor",
+  "version": "0.3.0-beta.0",
+  "description": "Capacitor plugin for the SmartScanner Core library to scan MRZ and barcodes",
   "main": "dist/plugin.js",
   "module": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
@@ -15,7 +15,7 @@
     "prepublishOnly": "npm run build"
   },
   "author": "NewLogic",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "devDependencies": {
     "@capacitor/android": "^2.4.2",
     "@capacitor/core": "^2.4.1",
@@ -54,11 +54,11 @@
   },
   "prettier": "@ionic/prettier-config",
   "swiftlint": "@ionic/swiftlint-config",
-  "repository": {
-    "type": "git",
-    "url": "SmartScannerCapacitorPlugin"
-  },
+  "repository": "idpass/smartscanner-capacitor",
   "bugs": {
     "url": "https://github.com/idpass/smartscanner-capacitor/issues"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
