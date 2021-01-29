@@ -72,7 +72,7 @@ const result = await SmartScannerPlugin.executeScanner({
 });
 ```
 
-Refer to the [API Reference](https://github.com/newlogic/smartscanner-capacitor/wiki/API-Reference) for more information about the available API options and the returned result.
+Refer to the [API Reference](https://github.com/idpass/smartscanner-capacitor/wiki/API-Reference) for more information about the available API options and the returned result.
 
 ## Related projects
 
