@@ -1,6 +1,6 @@
 {
   "name": "@idpass/smartscanner-capacitor",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Capacitor plugin for the SmartScanner Core library to scan MRZ and barcodes",
   "main": "dist/plugin.js",
   "module": "dist/esm/index.js",
