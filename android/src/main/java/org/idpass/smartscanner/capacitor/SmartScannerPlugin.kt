@@ -24,8 +24,7 @@ class SmartScannerPlugin : Plugin() {
         saveCall(call)
         if (action == "START_SCANNER") {
             Timber.d("executeScanner %s", action)
-            val activity: Activity = activity
-            val intent = Intent(activity, SmartScannerActivity::class.java)
+            val intent = Intent(context, SmartScannerActivity::class.java)
             val scannerOptions = Gson().fromJson(options.toString(), ScannerOptions::class.java)
             intent.putExtra(SmartScannerActivity.SCANNER_OPTIONS, scannerOptions)
             startActivityForResult(call, intent, REQUEST_OP_SCANNER)
