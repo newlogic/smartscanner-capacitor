@@ -46,7 +46,7 @@ android {
     }
     buildTypes {
         debug {
-            minifyEnabled true
+            minifyEnabled false
         }
         release {
             minifyEnabled true
@@ -63,6 +63,11 @@ android {
     packagingOptions {
         exclude 'META-INF/NOTICE'
         exclude 'META-INF/LICENSE'
+    }
+    dexOptions {
+        preDexLibraries false
+        javaMaxHeapSize "4g"
+        jumboMode = true
     }
 }
 
@@ -121,4 +126,16 @@ dependencies {
 
     // gson
     implementation 'com.google.code.gson:gson:2.8.6'
+    // NFC
+    implementation 'org.jmrtd:jmrtd:0.7.18'
+    implementation 'com.madgag.spongycastle:prov:1.58.0.0'
+    implementation 'net.sf.scuba:scuba-sc-android:0.0.23'
+    implementation group: 'org.ejbca.cvc', name: 'cert-cvc', version: '1.4.6'
+    //WSQ
+    implementation 'com.github.mhshams:jnbis:2.0.2'
+    //DatatypeConverter
+    implementation 'commons-codec:commons-codec:1.12'
+    //RX
+    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.19'
 }
