@@ -1,6 +1,6 @@
 # SmartScanner Capacitor
 
-Capacitor plugin for the [SmartScanner Core](https://github.com/idpass/smartscanner-core) library to scan MRZ and barcodes.
+Capacitor plugin for the [SmartScanner Core](https://github.com/idpass/smartscanner-core) library to scan NFC, MRZ and barcodes.
 
 ## Installation
 
