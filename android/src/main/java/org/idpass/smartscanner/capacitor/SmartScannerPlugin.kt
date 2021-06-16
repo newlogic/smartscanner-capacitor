@@ -43,10 +43,14 @@ class SmartScannerPlugin : Plugin() {
                     val returnedResult = data?.getStringExtra(SmartScannerActivity.SCANNER_RESULT)
                     Timber.d("Plugin post SmartScannerActivity result %s", returnedResult)
                     try {
-                        val result = JSONObject(returnedResult)
-                        val ret = JSObject()
-                        ret.put(SmartScannerActivity.SCANNER_RESULT, result)
-                        savedCall.success(ret)
+                        if (returnedResult != null) {
+                            val result = JSONObject(returnedResult)
+                            val ret = JSObject()
+                            ret.put(SmartScannerActivity.SCANNER_RESULT, result)
+                            savedCall.success(ret)
+                        } else {
+                            savedCall.error("Scanning result is null.")
+                        }
                     } catch (e: JSONException) {
                         e.printStackTrace()
                     }
