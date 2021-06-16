@@ -1,2 +1,4 @@
+include ':smartscannerlib-release'
+include ':smartscanner-mrz-parser'
 include ':capacitor-android'
 project(':capacitor-android').projectDir = new File('../node_modules/@capacitor/android/capacitor')
