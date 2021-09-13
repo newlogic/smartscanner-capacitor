@@ -2,7 +2,13 @@ package org.idpass.smartscanner.capacitor
 
 import android.app.Activity
 import android.content.Intent
-import com.getcapacitor.*
+import androidx.activity.result.ActivityResult
+import com.getcapacitor.JSObject
+import com.getcapacitor.Plugin
+import com.getcapacitor.PluginCall
+import com.getcapacitor.PluginMethod
+import com.getcapacitor.annotation.ActivityCallback
+import com.getcapacitor.annotation.CapacitorPlugin
 import com.google.gson.Gson
 import org.idpass.smartscanner.lib.SmartScannerActivity
 import org.idpass.smartscanner.lib.scanner.config.ScannerOptions
@@ -10,62 +16,59 @@ import org.json.JSONException
 import org.json.JSONObject
 import timber.log.Timber
 
-@NativePlugin(requestCodes = [SmartScannerPlugin.REQUEST_OP_SCANNER])
+@CapacitorPlugin
 class SmartScannerPlugin : Plugin() {
 
     companion object {
-        const val REQUEST_OP_SCANNER = 1001
+        const val handleSmartScannerResult = "handleSmartScannerResult"
     }
 
     @PluginMethod
     fun executeScanner(call: PluginCall) {
         val action = call.getString("action")
         val options: JSONObject = call.getObject("options")
-        saveCall(call)
+        call.setKeepAlive(true)
         if (action == "START_SCANNER") {
-            Timber.d("executeScanner %s", action)
+            Timber.d("SmartScannerPlugin -- executeScanner $action")
             val intent = Intent(context, SmartScannerActivity::class.java)
             val scannerOptions = Gson().fromJson(options.toString(), ScannerOptions::class.java)
             intent.putExtra(SmartScannerActivity.SCANNER_OPTIONS, scannerOptions)
-            startActivityForResult(call, intent, REQUEST_OP_SCANNER)
+            startActivityForResult(call, intent, handleSmartScannerResult)
         } else {
-            call.error("\"$action\" is not a recognized action.")
+            call.reject("\"$action\" is not a recognized action.")
         }
     }
 
-    override fun handleOnActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.handleOnActivityResult(requestCode, resultCode, data)
-        val savedCall = savedCall ?: return
-        if (requestCode == REQUEST_OP_SCANNER) {
+    @ActivityCallback
+    fun handleSmartScannerResult(call: PluginCall, result: ActivityResult) {
+        if (result.resultCode == Activity.RESULT_CANCELED) {
+            Timber.d("SmartScannerPlugin -- RESULT CANCELLED")
+            call.reject("Scanning Cancelled.")
+        } else {
             try {
-                Timber.d("Plugin post SmartScannerActivity resultCode %d", resultCode)
-                if (resultCode == Activity.RESULT_OK) {
-                    val returnedResult = data?.getStringExtra(SmartScannerActivity.SCANNER_RESULT)
-                    Timber.d("Plugin post SmartScannerActivity result %s", returnedResult)
+                Timber.d("SmartScannerPlugin -- resultCode ${result.resultCode}")
+                if (result.resultCode == Activity.RESULT_OK) {
+                    val returnedResult = result.data?.getStringExtra(SmartScannerActivity.SCANNER_RESULT)
                     try {
+                        Timber.d("SmartScannerPlugin -- result $returnedResult")
                         if (returnedResult != null) {
-                            val result = JSONObject(returnedResult)
-                            val ret = JSObject()
-                            ret.put(SmartScannerActivity.SCANNER_RESULT, result)
-                            savedCall.success(ret)
+                            val ret = JSONObject(returnedResult)
+                            val scannedResult = JSObject()
+                            scannedResult.put(SmartScannerActivity.SCANNER_RESULT, ret)
+                            call.resolve(scannedResult)
                         } else {
-                            savedCall.error("Scanning result is null.")
+                            call.reject("Scanning result is null.")
                         }
                     } catch (e: JSONException) {
                         e.printStackTrace()
                     }
-                } else if (resultCode == Activity.RESULT_CANCELED) {
-                    Timber.d("Plugin post SmartScannerActivity RESULT CANCELLED")
-                    savedCall.error("Scanning Cancelled.")
                 } else {
-                    savedCall.error("Scanning Failed.")
+                    call.reject("Scanning Failed.")
                 }
             } catch (exception: Exception) {
                 Timber.e(exception)
                 exception.printStackTrace()
             }
-        } else {
-            savedCall.error("Unknown Request Code!")
         }
     }
 }

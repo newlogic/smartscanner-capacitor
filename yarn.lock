@@ -23,22 +23,22 @@
     chalk "^2.0.0"
     js-tokens "^4.0.0"
 
-"@capacitor/android@^2.4.2":
-  version "2.4.2"
-  resolved "https://registry.yarnpkg.com/@capacitor/android/-/android-2.4.2.tgz#ddc55bf0ea78214a0a760330a439916093792d00"
-  integrity sha512-0OpOmsno6yFyN0tOEhE9LkAqQrnTGUxz49+ZdivieI3axFe3CpxbFhcfIsJtr96q9jhkspkYPMqGNZm3gPKjaA==
+"@capacitor/android@^3.2.2":
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/@capacitor/android/-/android-3.2.2.tgz#0847d62d21c4e7007cf0b34fd95965afa22ba619"
+  integrity sha512-+/qbSZIHPP1VndRUe5c6dgheLV0MgX9CXeUo7el8ODHgVrC2DXKhczgvs+EpTAmvS2VZFxzDeld7AMUmHybTcg==
 
-"@capacitor/core@^2.4.1":
-  version "2.4.1"
-  resolved "https://registry.yarnpkg.com/@capacitor/core/-/core-2.4.1.tgz#d47db023d4b98fd62f8f829d2a046d0c1f0e5352"
-  integrity sha512-/OTDYTztAri04SNC+pIsSiIVG8ryjKkt3kG+aupoiHI1xankLJxGbcw5Z3aVZmhmMmJpk2nda2LC9Kc3Y0bA2w==
+"@capacitor/core@^3.2.2":
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/@capacitor/core/-/core-3.2.2.tgz#5926788920ba9117aa735d2941f5b2bdc4a6889a"
+  integrity sha512-xY3VyLbF0vSxQmQto6cI1PqP8idbwmfEAeaj248uuSrIYHeMc1L3RS6UN/yNBDPYPeAfNUwBhVqSTCtuZkEIcg==
   dependencies:
-    tslib "^1.9.0"
+    tslib "^2.1.0"
 
-"@capacitor/ios@^2.4.1":
-  version "2.4.1"
-  resolved "https://registry.yarnpkg.com/@capacitor/ios/-/ios-2.4.1.tgz#c65f3d3ae24b50806e60189087efc6703ac96e69"
-  integrity sha512-Q1PfO67zn2668Gu9OYY2v02TuB20E530HHfe28wrK9X1Jy5jRFl1ZUr3epCkaB4XJQeGqM42oACO+BwURNAW5Q==
+"@capacitor/ios@^3.2.2":
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/@capacitor/ios/-/ios-3.2.2.tgz#0417cf89df23f651c6a1e20a8fb98294a918ce1f"
+  integrity sha512-Eq17Y+UDHFmYGaZcObvxHAcHw0fF9TCBAg1f5f6qdV8ab3cKKEUB9xMvoCSZAueBfxFARrD18TsZJKoxh2YsLA==
 
 "@ionic/prettier-config@^1.0.0":
   version "1.0.1"
@@ -367,7 +367,7 @@ java-parser@0.8.2:
   integrity sha512-YphTEk4zIpWAHqBriAdjlNnTEcEYQ2xBA8KOH5V7QxggNbxjkeEcKJjNYnQvqEue8+O1TLj7vfL0NVG6x5LGMw==
   dependencies:
     chevrotain "6.5.0"
-    lodash "4.17.20"
+    lodash "4.17.21"
 
 js-tokens@^4.0.0:
   version "4.0.0"
@@ -465,7 +465,7 @@ prettier-plugin-java@^0.8.0:
   integrity sha512-G11PMutlfhUjLqmrB0gW9n6hTIvlnXX+lhzgH3Uhc1QSlDQoLBky5lNSRgvdYSDPpSF3DmyYd3/7U3Ez8n0ckg==
   dependencies:
     java-parser "0.8.2"
-    lodash "4.17.20"
+    lodash "4.17.21"
     prettier "2.1.1"
 
 prettier@2.1.1:
