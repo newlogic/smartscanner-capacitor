@@ -1,6 +1,5 @@
 import { WebPlugin } from '@capacitor/core';
-import { SmartScannerPluginInterface } from './definitions';
-export * from './web';
+import type { SmartScannerPluginInterface } from './definitions';
 
 export class SmartScannerPluginWeb extends WebPlugin implements SmartScannerPluginInterface {
   constructor() {
@@ -19,10 +18,3 @@ export class SmartScannerPluginWeb extends WebPlugin implements SmartScannerPlug
     console.log('executeScanner', options);
   }
 }
-
-const SmartScannerPlugin = new SmartScannerPluginWeb();
-
-export { SmartScannerPluginInterface };
-
-import { registerWebPlugin } from '@capacitor/core';
-registerWebPlugin(SmartScannerPlugin);
