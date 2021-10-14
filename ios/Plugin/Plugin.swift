@@ -5,8 +5,8 @@ import Capacitor
  * Please read the Capacitor iOS Plugin Development Guide
  * here: https://capacitorjs.com/docs/plugins/ios
  */
-@objc(MLKitPlugin)
-public class MLKitPlugin: CAPPlugin {
+@objc(SmartScannerCapacitorPlugin)
+public class SmartScannerCapacitorPlugin: CAPPlugin {
 
     @objc func echo(_ call: CAPPluginCall) {
         let value = call.getString("value") ?? ""
