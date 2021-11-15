@@ -14,7 +14,7 @@ export class SmartScannerPluginWeb extends WebPlugin implements SmartScannerPlug
     console.log('ECHO', options);
     return options;
   }
-  
+
   async executeScanner(options: { mode: string, action: string }): Promise<void> {
     console.log('executeScanner', options);
   }

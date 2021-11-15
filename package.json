@@ -37,7 +37,7 @@
     "dist/",
     "ios/",
     "android/",
-    "SmartScannerCapacitorPlugin.podspec"
+    "SmartScannerPlugin.podspec"
   ],
   "keywords": [
     "capacitor",
