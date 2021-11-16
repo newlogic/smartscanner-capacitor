@@ -55,7 +55,10 @@
   },
   "prettier": "@ionic/prettier-config",
   "swiftlint": "@ionic/swiftlint-config",
-  "repository": "idpass/smartscanner-capacitor",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/idpass/smartscanner-capacitor.git"
+  },
   "bugs": {
     "url": "https://github.com/idpass/smartscanner-capacitor/issues"
   },
