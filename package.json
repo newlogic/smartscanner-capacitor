@@ -35,9 +35,10 @@
   },
   "files": [
     "dist/",
-    "ios/",
     "android/",
-    "SmartScannerPlugin.podspec"
+    "ios/",
+    "ios/Plugin",
+    "IdpassSmartscannerCapacitor.podspec"
   ],
   "keywords": [
     "capacitor",
