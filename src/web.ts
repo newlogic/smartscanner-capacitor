@@ -1,8 +1,9 @@
 import { WebPlugin } from '@capacitor/core';
-import { SmartScannerPluginInterface } from './definitions';
+
+import { SmartScannerPlugin } from './definitions';
 export * from './web';
 
-export class SmartScannerPluginWeb extends WebPlugin implements SmartScannerPluginInterface {
+export class SmartScannerPluginWeb extends WebPlugin implements SmartScannerPlugin {
   constructor() {
     super({
       name: 'SmartScannerPlugin',
@@ -20,9 +21,3 @@ export class SmartScannerPluginWeb extends WebPlugin implements SmartScannerPlug
   }
 }
 
-const SmartScannerPlugin = new SmartScannerPluginWeb();
-
-export { SmartScannerPluginInterface };
-
-import { registerWebPlugin } from '@capacitor/core';
-registerWebPlugin(SmartScannerPlugin);

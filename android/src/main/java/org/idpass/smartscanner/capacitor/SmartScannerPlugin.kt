@@ -29,7 +29,7 @@ class SmartScannerPlugin : Plugin() {
             intent.putExtra(SmartScannerActivity.SCANNER_OPTIONS, scannerOptions)
             startActivityForResult(call, intent, REQUEST_OP_SCANNER)
         } else {
-            call.error("\"$action\" is not a recognized action.")
+            call.reject("\"$action\" is not a recognized action.")
         }
     }
 
@@ -47,25 +47,25 @@ class SmartScannerPlugin : Plugin() {
                             val result = JSONObject(returnedResult)
                             val ret = JSObject()
                             ret.put(SmartScannerActivity.SCANNER_RESULT, result)
-                            savedCall.success(ret)
+                            savedCall.resolve(ret)
                         } else {
-                            savedCall.error("Scanning result is null.")
+                            savedCall.reject("Scanning result is null.")
                         }
                     } catch (e: JSONException) {
                         e.printStackTrace()
                     }
                 } else if (resultCode == Activity.RESULT_CANCELED) {
                     Timber.d("Plugin post SmartScannerActivity RESULT CANCELLED")
-                    savedCall.error("Scanning Cancelled.")
+                    savedCall.reject("Scanning Cancelled.")
                 } else {
-                    savedCall.error("Scanning Failed.")
+                    savedCall.reject("Scanning Failed.")
                 }
             } catch (exception: Exception) {
                 Timber.e(exception)
                 exception.printStackTrace()
             }
         } else {
-            savedCall.error("Unknown Request Code!")
+            savedCall.reject("Unknown Request Code!")
         }
     }
 }

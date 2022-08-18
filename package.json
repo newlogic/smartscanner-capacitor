@@ -1,7 +1,7 @@
 {
   "name": "@idpass/smartscanner-capacitor",
   "version": "0.4.1",
-  "description": "Capacitor plugin for the SmartScanner Core library to scan MRZ and barcodes",
+  "description": "Capacitor plugin for the SmartScanner Core library to scan MRZ, NFC and barcodes",
   "main": "dist/plugin.js",
   "module": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
@@ -17,9 +17,10 @@
   "author": "NewLogic",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@capacitor/android": "^2.4.2",
-    "@capacitor/core": "^2.4.1",
-    "@capacitor/ios": "^2.4.1",
+    "@capacitor/android": "^4.0.1",
+    "@capacitor/cli": "^4.0.1",
+    "@capacitor/core": "^4.0.1",
+    "@capacitor/ios": "^4.0.1",
     "@ionic/prettier-config": "^1.0.0",
     "@ionic/swiftlint-config": "^1.0.0",
     "@rollup/plugin-node-resolve": "^8.1.0",
@@ -31,7 +32,7 @@
     "typescript": "~3.8.3"
   },
   "peerDependencies": {
-    "@capacitor/core": "^2.4.1"
+    "@capacitor/core": "^4.0.1"
   },
   "files": [
     "dist/",

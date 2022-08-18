@@ -1,11 +1,4 @@
-
-declare module '@capacitor/core' {
-  interface PluginRegistry {
-    SmartScannerPluginInterface: SmartScannerPluginInterface;
-  }
-}
-
-export interface SmartScannerPluginInterface {
+export interface SmartScannerPlugin {
   echo(options: { value: string }): Promise<{ value: string }>;
-  executeScanner(options: { mode: string, action: string}): Promise< void >;
+  executeScanner(options: { mode: string, action: string}): Promise<void>;
 }
