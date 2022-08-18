@@ -65,5 +65,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "np": "^7.6.2"
   }
 }
