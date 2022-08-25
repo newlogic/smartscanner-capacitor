@@ -2,7 +2,12 @@ package org.idpass.smartscanner.capacitor
 
 import android.app.Activity
 import android.content.Intent
-import com.getcapacitor.*
+import com.getcapacitor.JSObject;
+import com.getcapacitor.Plugin;
+import com.getcapacitor.PluginCall;
+import com.getcapacitor.PluginMethod;
+import com.getcapacitor.annotation.CapacitorPlugin;
+import com.getcapacitor.annotation.Permission;
 import com.google.gson.Gson
 import org.idpass.smartscanner.lib.SmartScannerActivity
 import org.idpass.smartscanner.lib.scanner.config.ScannerOptions
@@ -10,7 +15,21 @@ import org.json.JSONException
 import org.json.JSONObject
 import timber.log.Timber
 
-@NativePlugin(requestCodes = [SmartScannerPlugin.REQUEST_OP_SCANNER])
+@CapacitorPlugin(
+    name = "SmartScanner",
+    requestCodes = [SmartScannerPlugin.REQUEST_OP_SCANNER],
+    permissions = {
+        @Permission(
+          strings = { Manifest.permission.ACCESS_NETWORK_STATE },
+          alias = "network"
+        ),
+        @Permission(strings = { Manifest.permission.INTERNET }, alias = "internet"),
+        @Permission(
+          strings = { Manifest.permission.CAMERA },
+          alias = "camera"
+        )
+    }
+ )
 class SmartScannerPlugin : Plugin() {
 
     companion object {
