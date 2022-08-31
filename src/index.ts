@@ -1,7 +1,7 @@
 import { registerPlugin } from "@capacitor/core";
 import type { SmartScannerPlugin } from "./definitions";
 
-const SmartScannerPlugin = registerPlugin<SmartScannerPlugin>(
+const SmartScanner = registerPlugin<SmartScannerPlugin>(
   'SmartScanner',
   {
     web: () => import("./web").then((m) => new m.SmartScannerPluginWeb())
@@ -9,4 +9,4 @@ const SmartScannerPlugin = registerPlugin<SmartScannerPlugin>(
 );
 
 export * from "./definitions";
-export { SmartScannerPlugin };
+export { SmartScanner };
