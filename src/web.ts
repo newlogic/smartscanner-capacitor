@@ -5,18 +5,15 @@ export * from './web';
 
 export class SmartScannerPluginWeb extends WebPlugin implements SmartScannerPlugin {
   constructor() {
-    super({
-      name: 'SmartScannerPlugin',
-      platforms: ['web'],
-    });
+    super();
   }
 
-  async echo(options: { value: string }): Promise<{ value: string }> {
+  public async echo(options: { value: string }): Promise<{ value: string }> {
     console.log('ECHO', options);
     return options;
   }
 
-  async executeScanner(options: { mode: string, action: string }): Promise<void> {
+  public async executeScanner(options: { mode: string, action: string }): Promise<void> {
     console.log('executeScanner', options);
   }
 }

@@ -2,9 +2,10 @@ import { registerPlugin } from "@capacitor/core";
 import type { SmartScannerPlugin } from "./definitions";
 
 const SmartScannerPlugin = registerPlugin<SmartScannerPlugin>(
-  "SmartScanner",
+  'SmartScanner',
   {
     web: () => import("./web").then((m) => new m.SmartScannerPluginWeb()),
+    electron: () => import('./web').then(m => new m.SmartScannerPluginWeb())
   }
 );
 

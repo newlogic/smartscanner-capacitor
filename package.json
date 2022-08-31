@@ -2,7 +2,7 @@
   "name": "@idpass/smartscanner-capacitor",
   "version": "0.5.0-beta.3",
   "description": "Capacitor plugin for the SmartScanner Core library to scan MRZ, NFC and barcodes",
-  "main": "dist/plugin.js",
+  "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
   "scripts": {
@@ -16,23 +16,23 @@
   },
   "author": "NewLogic",
   "license": "Apache-2.0",
-  "devDependencies": {
+  "dependencies": {
     "@capacitor/android": "^4.0.1",
     "@capacitor/cli": "^4.0.1",
     "@capacitor/core": "^4.0.1",
-    "@capacitor/ios": "^4.0.1",
-    "@ionic/prettier-config": "^1.0.0",
-    "@ionic/swiftlint-config": "^1.0.0",
-    "@rollup/plugin-node-resolve": "^8.1.0",
-    "prettier": "^2.0.5",
-    "prettier-plugin-java": "^0.8.0",
-    "rimraf": "^3.0.0",
-    "rollup": "^2.21.0",
-    "swiftlint": "^1.0.1",
-    "typescript": "~3.8.3"
+    "@capacitor/ios": "^4.0.1"
   },
-  "peerDependencies": {
-    "@capacitor/core": "^4.0.1"
+  "devDependencies": {
+    "@ionic/eslint-config": "^0.3.0",
+    "@ionic/prettier-config": "^1.0.1",
+    "@ionic/swiftlint-config": "^1.1.2",
+    "@rollup/plugin-node-resolve": "^8.1.0",
+    "eslint": "^7.11.0",
+    "prettier": "~2.2.0",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.32.0",
+    "swiftlint": "^1.0.1",
+    "typescript": "~4.0.3"
   },
   "files": [
     "dist/",
@@ -56,6 +56,9 @@
   },
   "prettier": "@ionic/prettier-config",
   "swiftlint": "@ionic/swiftlint-config",
+  "eslintConfig": {
+    "extends": "@ionic/eslint-config/recommended"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/idpass/smartscanner-capacitor.git"
@@ -65,8 +68,5 @@
   },
   "publishConfig": {
     "access": "public"
-  },
-  "dependencies": {
-    "np": "^7.6.2"
   }
 }
