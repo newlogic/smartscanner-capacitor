@@ -96,7 +96,7 @@ dependencies {
     implementation 'androidx.preference:preference-ktx:1.1.1'
 
     // ML Kit dependencies
-    implementation 'com.google.mlkit:text-recognition:16.0.0-beta5'
+    implementation 'com.google.mlkit:text-recognition:16.0.0-beta6'
     implementation 'com.google.mlkit:barcode-scanning:17.0.2'
 
     // Glide
