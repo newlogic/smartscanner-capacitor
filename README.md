@@ -36,6 +36,7 @@ const result = await SmartScannerPlugin.executeScanner({
       background: '#89837c',
       branding: false,
       isManualCapture: true,
+      showGuide: true, // beta version 0.4.5-beta
     },
   },
 });
