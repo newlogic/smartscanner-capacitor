@@ -27,7 +27,7 @@ allprojects {
         maven { url 'https://jitpack.io' }
         jcenter()
         flatDir {
-            dirs 'aar'
+            dirs 'libs'
         }
     }
 }
@@ -80,9 +80,9 @@ dependencies {
 
     implementation project(':capacitor-android')
 
-    debugImplementation files('aar/smartscannerlib-debug.aar')
-    releaseImplementation files('aar/smartscannerlib-release.aar')
-    implementation files('aar/smartscanner-mrz-parser.aar')
+    debugImplementation(name: 'smartscannerlib-debug', ext: 'aar')
+    releaseImplementation(name: 'smartscannerlib-release', ext: 'aar')
+    implementation(name: 'smartscanner-mrz-parser', ext: 'aar')
 
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
