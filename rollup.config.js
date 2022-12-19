@@ -9,6 +9,7 @@ export default {
     globals: {
       '@capacitor/core': 'capacitorExports',
     },
+    inlineDynamicImports: true,
     sourcemap: true,
   },
   plugins: [

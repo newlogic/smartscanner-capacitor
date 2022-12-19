@@ -13,7 +13,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.google.gms:google-services:4.3.3'
-        classpath 'com.android.tools.build:gradle:3.6.1'
+        classpath 'com.android.tools.build:gradle:4.2.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -79,9 +79,9 @@ dependencies {
 
     implementation project(':capacitor-android')
 
-    debugImplementation files('aar/smartscannerlib-debug.aar')
-    releaseImplementation files('aar/smartscannerlib-release.aar')
-    implementation files('aar/smartscanner-mrz-parser.aar')
+    debugImplementation(name: 'smartscannerlib-debug', ext: 'aar')
+    releaseImplementation(name: 'smartscannerlib-release', ext: 'aar')
+    implementation(name: 'smartscanner-mrz-parser', ext: 'aar')
 
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"

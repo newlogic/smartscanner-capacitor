@@ -19,9 +19,7 @@ yarn add @idpass/smartscanner-capacitor
 The plugin can be used through Capacitor's `Plugins` object, which is the registry of all available plugins.
 
 ```js
-import { Plugins } from '@capacitor/core';
-
-const { SmartScannerPlugin } = Plugins;
+import { SmartScannerPlugin } from '@idpass/smartscanner-capacitor'
 ```
 
 MRZ scanning example:
