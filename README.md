@@ -19,73 +19,92 @@ yarn add @idpass/smartscanner-capacitor
 The plugin can be used through Capacitor's `Plugins` object, which is the registry of all available plugins.
 
 ```js
-import { Plugins } from '@capacitor/core';
-
-const { SmartScannerPlugin } = Plugins;
+import { ScannerInputConfig, ScannerOptions, SmartScannerPlugin } from '@idpass/smartscanner-capacitor';
 ```
 
 MRZ scanning example:
 
 ```js
-const result = await SmartScannerPlugin.executeScanner({
-  action: 'START_SCANNER',
-  options: {
-    mode: 'mrz',
-    mrzFormat: 'MRTD_TD1',
-    config: {
-      background: '#89837c',
-      branding: false,
-      isManualCapture: true,
-    },
-  },
-});
+const scannerOptions: ScannerOptions = {
+  mode: 'mrz',
+  config: {
+    background: '#89837c',
+    header: 'Sample Header',
+    subHeader: 'Sample SubHeader',
+    label: 'Sample Config Label',
+    isManualCapture: true,
+    branding: false
+  }, 
+  mrzFormat: 'MRTD_TD1',
+}
 
+const inputConfig: ScannerInputConfig = {
+  action: 'START_SCANNER',
+  options: scannerOptions
+}
+
+await SmartScannerPlugin.executeScanner(inputConfig);
 ```
 NFC scanning example:
 
 ```js
-const result = await SmartScannerPlugin.executeScanner({
+const scannerOptions: ScannerOptions = {
+  mode: 'nfc-scan',
+  config: {
+    background: '#89837c',
+    header: 'Sample Header',
+    subHeader: 'Sample SubHeader',
+    label: 'Sample Config Label'
+  }, 
+  nfcOptions: {
+    label: 'This is a sample label',
+    withPhoto: true,
+    withMrzPhoto: false
+  }
+}
+
+const inputConfig: ScannerInputConfig = {
   action: 'START_SCANNER',
-  options: {
-    mode: 'nfc-scan',
-    config: {
-      background: '#89837c',
-      branding: false,
-      isManualCapture: false,
-    },
-  },
-});
+  options: scannerOptions
+}
+
+
+await SmartScannerPlugin.executeScanner(inputConfig);
 ```
 
 Barcode scanning example:
 
 ```js
-const result = await SmartScannerPlugin.executeScanner({
-  action: 'START_SCANNER',
-  options: {
-    mode: 'barcode',
-    barcodeOptions: {
-      barcodeFormats: [
-        'AZTEC',
-        'CODABAR',
-        'CODE_39',
-        'CODE_93',
-        'CODE_128',
-        'DATA_MATRIX',
-        'EAN_8',
-        'EAN_13',
-        'QR_CODE',
-        'UPC_A',
-        'UPC_E',
-        'PDF_417',
-      ],
-    },
-    config: {
-      background: '#ffc234',
-      label: 'Sample Label',
-    },
+const scannerOptions: ScannerOptions = {
+  mode: 'barcode',
+  barcodeOptions: {
+    barcodeFormats: [
+      'AZTEC',
+      'CODABAR',
+      'CODE_39',
+      'CODE_93',
+      'CODE_128',
+      'DATA_MATRIX',
+      'EAN_8',
+      'EAN_13',
+      'QR_CODE',
+      'UPC_A',
+      'UPC_E',
+      'PDF_417',
+    ],
   },
-});
+  config: {
+    background: '#ffc234',
+    label: 'Sample Config Label',
+  }
+}
+
+const inputConfig: ScannerInputConfig = {
+  action: 'START_SCANNER',
+  options: scannerOptions
+}
+
+await SmartScannerPlugin.executeScanner(inputConfig);
 ```
 
 Refer to the [API Reference](https://github.com/idpass/smartscanner-capacitor/wiki/API-Reference) for more information about the available API options and the returned result.

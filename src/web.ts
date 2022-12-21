@@ -1,20 +1,8 @@
 import { WebPlugin } from '@capacitor/core';
-import type { SmartScannerPluginInterface } from './definitions';
+import { ScannerInputConfig, SmartScannerPluginInterface } from './definitions';
 
 export class SmartScannerPluginWeb extends WebPlugin implements SmartScannerPluginInterface {
-  constructor() {
-    super({
-      name: 'SmartScannerPlugin',
-      platforms: ['web'],
-    });
-  }
-
-  async echo(options: { value: string }): Promise<{ value: string }> {
-    console.log('ECHO', options);
-    return options;
-  }
-
-  async executeScanner(options: { mode: string, action: string }): Promise<void> {
-    console.log('executeScanner', options);
+  async executeScanner(_config: ScannerInputConfig): Promise<void> {
+    throw new Error('method not available in web');
   }
 }
