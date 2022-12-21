@@ -156,12 +156,6 @@ export interface Config {
    * @since 0.5.0
    */
   label?: string;
-  /**
-   * This parameter is used to set the guide for scanning
-   * 
-   * @since 0.4.5-beta
-   */
-  showGuide?: boolean;
 }
 
 /**
@@ -258,4 +252,3 @@ export interface NfcOptions {
    */
   enableLogging?: boolean;
 }
-

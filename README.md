@@ -33,8 +33,7 @@ const scannerOptions: ScannerOptions = {
     subHeader: 'Sample SubHeader',
     label: 'Sample Config Label',
     isManualCapture: true,
-    branding: false,
-    showGuide: true, // beta version 0.4.5-beta
+    branding: false
   }, 
   mrzFormat: 'MRTD_TD1',
 }
