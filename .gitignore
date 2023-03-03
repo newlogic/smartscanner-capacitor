@@ -66,3 +66,7 @@ captures/
 # ios pod related files
 Podfile.lock
 contents.xcworkspacedata
+
+
+# Ignore yarn locks
+yarn.lock
