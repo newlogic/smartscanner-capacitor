@@ -40,6 +40,31 @@ const result = await SmartScannerPlugin.executeScanner({
 });
 
 ```
+OCR scanning example:
+
+```js
+const result = await SmartScannerPlugin.executeScanner({
+  action: 'START_SCANNER',
+  options: {
+    mode: 'ocr',
+    ocrOptions: {
+      type: 'documentNumber',
+      regex: '\\d{4} \\d{4} \\d{5}'
+    },
+    config: {
+      background: '#89837c',
+      branding: false,
+      isManualCapture: false, //if true user will be required to tap the capture button
+      showGuide: true, //values below will only be used when this is set to true
+      xGuide: 0.8, //accepts values from 0.0 - 1.0. Offsets the guide horizontally based on percentage.
+      yGuide: 0.5, //accepts values from 0.0 - 1.0. Offsets the guide vertically based on percentage.
+      widthGuide: 150, //sets the guide width. Default is 150
+      heightGuide: 40 //sets the guide height. Default is 40
+    },
+  },
+});
+
+```
 NFC scanning example:
 
 ```js
@@ -91,7 +116,7 @@ Refer to the [API Reference](https://github.com/idpass/smartscanner-capacitor/wi
 
 ## Related projects
 
-- [smartscanner-core](https://github.com/idpass/smartscanner-core) - Android library for scanning MRZ, Barcode, and ID PASS Lite cards
+- [smartscanner-core](https://github.com/idpass/smartscanner-core) - Android library for scanning MRZ, OCR, Barcode, and ID PASS Lite cards
 - [smartscanner-android-api](https://github.com/idpass/smartscanner-android-api) - Provides convenience methods to simplify the SmartScanner intent call out process
 - [smartscanner-cordova](https://github.com/idpass/smartscanner-cordova) - SmartScanner [Cordova](https://cordova.apache.org/) plugin
 
