@@ -19,3 +19,9 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Keep StringConcatFactory which is referenced but may be removed
+-keep class java.lang.invoke.StringConcatFactory { *; }
+
+# Keep IDPassReader which is referenced but may be removed
+-keep class org.idpass.lite.IDPassReader { *; }
