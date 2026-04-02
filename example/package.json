@@ -1,0 +1,24 @@
+{
+  "name": "smartscanner-example",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "sync": "npm run build && npx cap sync android",
+    "build-android": "npm run build && npx cap sync android && node -e \"require('child_process').execSync(process.platform==='win32'?'gradlew.bat clean assembleDebug':'./gradlew clean assembleDebug',{cwd:'android',stdio:'inherit',shell:true})\""
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/ios": "^7.0.0",
+    "@idpass/smartscanner-capacitor": "0.7.5-beta.1",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.0.0",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "vite": "^6.2.1"
+  }
+}

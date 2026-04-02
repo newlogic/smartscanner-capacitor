@@ -1,0 +1,1 @@
+import{W as n}from"./index-Dw5-VHcT.js";class o extends n{constructor(){super()}async echo(e){return console.log("ECHO",e),e}async executeScanner(e){console.log("executeScanner",e)}}export{o as SmartScannerPluginWeb};

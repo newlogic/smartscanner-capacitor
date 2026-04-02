@@ -25,3 +25,13 @@
 
 # Keep IDPassReader which is referenced but may be removed
 -keep class org.idpass.lite.IDPassReader { *; }
+
+# Keep all classes in the IDPass package
+-keep class org.idpass.** { *; }
+-keep interface org.idpass.** { *; }
+
+# Please add these rules to your existing keep rules in order to suppress warnings.
+# This is generated automatically by the Android Gradle plugin.
+-dontwarn java.lang.invoke.StringConcatFactory
+-dontwarn org.idpass.lite.IDPassReader
+

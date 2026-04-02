@@ -65,6 +65,66 @@ const result = await SmartScannerPlugin.executeScanner({
 });
 
 ```
+Table OCR scanning example (attendance table):
+
+```js
+const result = await SmartScannerPlugin.executeScanner({
+  action: 'START_SCANNER',
+  options: {
+    mode: 'table-ocr',
+    ocrOptions: {
+      analyzeStart: 1000,
+      tableConfig: {
+        // Months and Total column are auto-detected from the table grid
+        columnHeaders: [],
+        autoDetectMonths: true,
+        // Number of data rows and their labels
+        dataRows: 3,
+        rowLabels: ['School', 'Present', 'Absent'],
+        // Cell validation
+        regex: '[0-9]{1,2}',
+        validMin: 1,
+        validMax: 31,
+        transforms: ['LETTER_TO_DIGIT'],
+        tableTransforms: ['ATTENDANCE'],
+      },
+    },
+    config: {
+      background: '#89837c',
+      branding: true,
+      label: 'Table OCR',
+      isManualCapture: true,
+      showOcrGuide: true,
+      showOcrRegions: true,
+      orientation: 'portrait',
+      widthGuide: 900,
+      heightGuide: 400,
+      xGuide: 0.5,
+      yGuide: 0.5,
+    },
+  },
+});
+
+// result.scanner_result.fields contains flat "row.col" keys:
+// { "school.jun": "22", "school.jul": "20", ..., "school.total": "198", ... }
+//
+// result.table_meta contains the auto-detected table structure:
+// { columnHeaders: ["Jun","Jul",...,"Total"], rowLabels: ["School","Present","Absent"], ... }
+```
+
+A runnable Vue 3 + Vite example is available in the [`example/`](./example) folder.
+See [`example/src/App.vue`](./example/src/App.vue) for the full Table OCR implementation.
+
+To build and run:
+
+```bash
+cd example
+nvm use           # switches to Node 22 via .nvmrc (requires Node >= 18)
+npm install
+npm run sync      # builds Vue app into www/ and syncs to Android
+# then open example/android in Android Studio and run on device
+```
+
 NFC scanning example:
 
 ```js

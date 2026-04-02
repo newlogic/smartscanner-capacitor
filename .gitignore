@@ -70,3 +70,7 @@ contents.xcworkspacedata
 
 # Ignore yarn locks
 yarn.lock
+android/gradle/wrapper/gradle-wrapper.jar
+android/.project
+android/.kotlin/sessions
+.vscode/settings.json

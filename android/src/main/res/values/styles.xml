@@ -1,3 +1,7 @@
 <resources>
-
+    <!-- Extends AppCompat NoActionBar and opts out of Android 15 forced edge-to-edge
+         so the capture button is never hidden behind the navigation bar. -->
+    <style name="SmartScannerTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
+    </style>
 </resources>

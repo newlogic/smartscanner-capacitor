@@ -1,2 +1,16 @@
-<manifest package="org.idpass.smartscanner.capacitor.smartscannercapacitorplugin">
-  </manifest>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.FLASHLIGHT" />
+    <uses-feature android:name="android.hardware.camera" android:required="true" />
+
+    <application>
+        <activity
+            android:name="org.idpass.smartscanner.lib.SmartScannerActivity"
+            android:theme="@style/SmartScannerTheme"
+            android:screenOrientation="portrait"
+            android:exported="false"
+            tools:replace="android:exported,android:screenOrientation,android:theme" />
+    </application>
+</manifest>

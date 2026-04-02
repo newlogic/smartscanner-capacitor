@@ -1,7 +1,6 @@
 import { WebPlugin } from '@capacitor/core';
 
 import { SmartScannerPlugin } from './definitions';
-export * from './web';
 
 export class SmartScannerPluginWeb extends WebPlugin implements SmartScannerPlugin {
   constructor() {

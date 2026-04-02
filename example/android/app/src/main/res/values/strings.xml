@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">SmartScannerExample</string>
+    <string name="title_activity_main">SmartScannerExample</string>
+    <string name="package_name">com.example.smartscanner</string>
+    <string name="custom_url_scheme">com.example.smartscanner</string>
+</resources>

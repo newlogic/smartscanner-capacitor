@@ -1,0 +1,6 @@
+{
+  "appId": "com.example.smartscanner",
+  "appName": "SmartScannerExample",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
