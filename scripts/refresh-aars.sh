@@ -57,27 +57,33 @@ else
 fi
 
 echo
-echo "==> Building :core-lib:assembleDebug :core-lib:assembleRelease"
-(cd "$CORE_DIR" && ./gradlew :core-lib:assembleDebug :core-lib:assembleRelease)
+echo "==> Building :core-lib:assembleDebug :core-lib:assembleRelease :smartscanner-mrz-parser:assembleRelease"
+(cd "$CORE_DIR" && ./gradlew :core-lib:assembleDebug :core-lib:assembleRelease :smartscanner-mrz-parser:assembleRelease)
 
 src_debug="$CORE_DIR/core-lib/build/outputs/aar/core-lib-debug.aar"
 src_release="$CORE_DIR/core-lib/build/outputs/aar/core-lib-release.aar"
+# core-lib depends on the parser as a separate AAR (not bundled), so it must be refreshed too --
+# core-lib now calls MrzRecord.rawMrz; a stale parser AAR would NoSuchFieldError at scan time.
+# Built via core the Gradle module is :smartscanner-mrz-parser, so AGP emits smartscanner-mrz-parser-release.aar.
+src_parser="$CORE_DIR/smartscanner-mrz-parser/parser/build/outputs/aar/smartscanner-mrz-parser-release.aar"
 dst_debug="$DEST_DIR/smartscannerlib-debug/1.0/smartscannerlib-debug-1.0.aar"
 dst_release="$DEST_DIR/smartscannerlib-release/1.0/smartscannerlib-release-1.0.aar"
+dst_parser="$DEST_DIR/smartscanner-mrz-parser/1.0/smartscanner-mrz-parser-1.0.aar"
 
-for f in "$src_debug" "$src_release"; do
+for f in "$src_debug" "$src_release" "$src_parser"; do
   if [[ ! -f "$f" ]]; then
     echo "error: expected build output not found: $f" >&2
     exit 1
   fi
 done
 
-mkdir -p "$(dirname "$dst_debug")" "$(dirname "$dst_release")"
+mkdir -p "$(dirname "$dst_debug")" "$(dirname "$dst_release")" "$(dirname "$dst_parser")"
 
 echo
-echo "==> Copying AARs (renaming core-lib-*.aar -> smartscannerlib-*-1.0.aar)"
+echo "==> Copying AARs (core-lib-*.aar -> smartscannerlib-*-1.0.aar; parser -> smartscanner-mrz-parser-1.0.aar)"
 cp -v "$src_debug" "$dst_debug"
 cp -v "$src_release" "$dst_release"
+cp -v "$src_parser" "$dst_parser"
 
 echo
 echo "Done. Source SHA: $actual_sha"
